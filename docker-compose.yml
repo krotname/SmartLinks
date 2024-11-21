@@ -1,0 +1,15 @@
+version: '3.9'
+
+volumes:
+  redis_data:
+services:
+  redis:
+    container_name: redis
+    image: docker.io/bitnami/redis:7.0
+    environment:
+      REDIS_PASSWORD: password
+      REDIS_PORT_NUMBER: 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
