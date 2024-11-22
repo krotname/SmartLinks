@@ -12,7 +12,10 @@ public class RedisConfig {
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         // Настройка соединения с Redis
-        return new LettuceConnectionFactory();
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory();
+        lettuceConnectionFactory.setPassword("password");
+        lettuceConnectionFactory.setPort(6379);
+        return lettuceConnectionFactory;
     }
 
     @Bean
