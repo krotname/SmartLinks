@@ -1,5 +1,7 @@
 package name.krot.smartlinks.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import name.krot.smartlinks.command.CommandFactory;
 import name.krot.smartlinks.service.UrlService;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Tag(name = "Smart Links API", description = "API для сокращения URL и управления ими")
+@Tag(name = "SmartLinks API", description = "API для сокращения URL и управления ими")
 public class UrlController {
 
     private final CommandFactory commandFactory;

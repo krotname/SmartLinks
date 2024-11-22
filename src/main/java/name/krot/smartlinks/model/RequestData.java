@@ -13,7 +13,7 @@ public class RequestData {
     private final String body;
     private final String path;
     private final String matchingPattern;
-    private PathMatcher pathMatcher = new AntPathMatcher();
+    private final PathMatcher pathMatcher = new AntPathMatcher();
 
     public String getPathVariable(String variableName) {
         Map<String, String> variables = pathMatcher.extractUriTemplateVariables(matchingPattern, path);

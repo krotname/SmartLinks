@@ -1,6 +1,5 @@
 package name.krot.smartlinks.command;
 
-import lombok.RequiredArgsConstructor;
 import name.krot.smartlinks.model.RequestData;
 import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.service.UrlService;

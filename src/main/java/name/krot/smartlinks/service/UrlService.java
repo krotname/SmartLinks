@@ -4,22 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.repository.UrlRepository;
-import org.springframework.stereotype.Service;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
-import java.util.UUID;
 
 @RequiredArgsConstructor
-@Service
+@Component
 @Slf4j
 public class UrlService {
 
     private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final int ID_LENGTH = 8;
-    private SecureRandom random = new SecureRandom();
-
     private final UrlRepository urlRepository;
+    private final SecureRandom random = new SecureRandom();
 
     public String shortenUrl(String longUrl) {
         log.info("Received URL to shorten: {}", longUrl);

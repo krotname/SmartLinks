@@ -1,7 +1,7 @@
 package name.krot.smartlinks.config;
 
-import io.swagger.v3.oas.models.*;
-import io.swagger.v3.oas.models.info.*;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +12,7 @@ public class OpenApiConfig {
     public OpenAPI urlShortenerOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("URL Smart Links API")
+                        .title("URL SmartLinks API")
                         .version("1.0")
                         .description("Документация API для сервиса сокращения URL"));
     }

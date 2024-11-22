@@ -1,29 +1,30 @@
 package name.krot.smartlinks.controller;
 
+import name.krot.smartlinks.exception.ResourceNotFoundException;
+import name.krot.smartlinks.model.Url;
+import name.krot.smartlinks.service.UrlService;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.example.urlshortener.model.Url;
-import com.example.urlshortener.service.UrlService;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UrlController.class)
-public class UrlControllerTest {
+class UrlControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private UrlService urlService;
 
     @Test
@@ -41,7 +42,7 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void testShortenUrl_InvalidUrl() throws Exception {
+    void testShortenUrl_InvalidUrl() throws Exception {
         String longUrl = "invalid_url";
 
         when(urlService.shortenUrl(longUrl)).thenThrow(new IllegalArgumentException("Invalid URL"));
@@ -54,7 +55,7 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void testRedirect_Success() throws Exception {
+    void testRedirect_Success() throws Exception {
         String shortId = "abc123";
         String longUrl = "https://www.example.com";
         Url url = new Url(shortId, longUrl, System.currentTimeMillis(), System.currentTimeMillis(), 0);
@@ -67,7 +68,7 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void testRedirect_NotFound() throws Exception {
+    void testRedirect_NotFound() throws Exception {
         String shortId = "abc123";
 
         when(urlService.getLongUrl(shortId)).thenThrow(new ResourceNotFoundException("URL not found"));
@@ -78,7 +79,7 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void testGetStatistics_Success() throws Exception {
+    void testGetStatistics_Success() throws Exception {
         String shortId = "abc123";
         Url url = new Url(shortId, "https://www.example.com", System.currentTimeMillis(), System.currentTimeMillis(), 5);
 
@@ -92,7 +93,7 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void testGetStatistics_NotFound() throws Exception {
+    void testGetStatistics_NotFound() throws Exception {
         String shortId = "abc123";
 
         when(urlService.getUrlDetails(shortId)).thenThrow(new ResourceNotFoundException("URL not found"));
