@@ -51,23 +51,36 @@ public class CommandFactory {
         });
     }
 
-    public ResponseEntity<?> executeCommand(String method, String path, RequestData requestData) {
-        String key = findMatchingKey(method, path);
-        Command<?> command = commandMap.get(key).apply(requestData);
+    public ResponseEntity<?> executeCommand(String method, String path, String body) {
+        CommandKey commandKey = findMatchingKey(method, path);
+        RequestData requestData = new RequestData(body, path, commandKey.pattern);
+        Command<?> command = commandMap.get(commandKey.key).apply(requestData);
         Object result = command.execute();
-        ResponseHandler handler = responseHandlerMap.get(key);
+        ResponseHandler handler = responseHandlerMap.get(commandKey.key);
         return handler.handle(result);
     }
 
-    private String findMatchingKey(String method, String path) {
+    private CommandKey findMatchingKey(String method, String path) {
         for (String key : commandMap.keySet()) {
             String[] parts = key.split(":", 2);
             String keyMethod = parts[0];
             String keyPath = parts[1];
             if (method.equalsIgnoreCase(keyMethod) && pathMatcher.match(keyPath, path)) {
-                return key;
+                return new CommandKey(key, keyPath);
             }
         }
         throw new UnsupportedOperationException("Unsupported operation");
     }
+
+    private class CommandKey {
+        String key;
+        String pattern;
+
+        CommandKey(String key, String pattern) {
+            this.key = key;
+            this.pattern = pattern;
+        }
+    }
+
+
 }

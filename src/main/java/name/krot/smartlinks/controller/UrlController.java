@@ -32,10 +32,8 @@ public class UrlController {
         String method = request.getMethod();
         String path = request.getRequestURI();
 
-        RequestData requestData = new RequestData(body, path);
-
         try {
-            return commandFactory.executeCommand(method, path, requestData);
+            return commandFactory.executeCommand(method, path, body);
         } catch (UnsupportedOperationException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Operation not supported");
         }

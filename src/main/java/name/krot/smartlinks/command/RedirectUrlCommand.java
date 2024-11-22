@@ -1,6 +1,7 @@
 package name.krot.smartlinks.command;
 
 import lombok.RequiredArgsConstructor;
+import name.krot.smartlinks.exception.ResourceNotFoundException;
 import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.service.UrlService;
 
@@ -11,6 +12,10 @@ public class RedirectUrlCommand implements Command<Url> {
 
     @Override
     public Url execute() {
-        return urlService.getLongUrl(shortId);
+        Url url = urlService.getLongUrl(shortId);
+        if (url == null) {
+            throw new ResourceNotFoundException("URL not found");
+        }
+        return url;
     }
 }

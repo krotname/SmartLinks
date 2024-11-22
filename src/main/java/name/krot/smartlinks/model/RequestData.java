@@ -12,10 +12,11 @@ public class RequestData {
     @Getter
     private final String body;
     private final String path;
+    private final String matchingPattern;
     private PathMatcher pathMatcher = new AntPathMatcher();
 
     public String getPathVariable(String variableName) {
-        Map<String, String> variables = pathMatcher.extractUriTemplateVariables(path, path);
+        Map<String, String> variables = pathMatcher.extractUriTemplateVariables(matchingPattern, path);
         return variables.get(variableName);
     }
 }
