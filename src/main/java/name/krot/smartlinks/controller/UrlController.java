@@ -25,7 +25,7 @@ public class UrlController {
     }
 
     @Operation(summary = "Обработка запросов")
-    @RequestMapping(value = {"/api/shorten", "/api/statistics/{id}", "/{id}"}, method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = {"/api/shorten", "/api/statistics/{id}", " /v1/{id}"}, method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<?> handleRequest(HttpServletRequest request,
                                            @RequestBody(required = false) String body) {
         String method = request.getMethod();

@@ -6,6 +6,7 @@ import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.repository.UrlRepository;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 
