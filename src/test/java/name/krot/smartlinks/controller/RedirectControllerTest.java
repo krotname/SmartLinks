@@ -7,10 +7,20 @@ import name.krot.smartlinks.predicate.PredicateFactory;
 import name.krot.smartlinks.predicate.RequestContext;
 import name.krot.smartlinks.service.SmartLinkService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -19,10 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,5 +121,36 @@ class RedirectControllerTest {
         mockMvc.perform(get("/s/nonexistent"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Smart Link not found"));
+    }
+
+    @Test
+    void testCreateSmartLink() throws Exception {
+        String smartLinkJson = "{\n" +
+                "  \"id\": \"smartlink123\",\n" +
+                "  \"rules\": [\n" +
+                "    {\n" +
+                "      \"predicates\": [\"DateRange\", \"Language\"],\n" +
+                "      \"args\": {\n" +
+                "        \"startWith\": \"2024-11-01T00:00:00\",\n" +
+                "        \"endWith\": \"2024-12-01T00:00:00\",\n" +
+                "        \"language\": [\"ru\", \"ru-RU\"]\n" +
+                "      },\n" +
+                "      \"redirectTo\": \"https://example.com/ru\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        mockMvc.perform(post("/api/smartlinks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(smartLinkJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Smart Link created successfully"));
+
+        ArgumentCaptor<SmartLink> smartLinkCaptor = ArgumentCaptor.forClass(SmartLink.class);
+        verify(smartLinkService, times(1)).saveSmartLink(smartLinkCaptor.capture());
+
+        SmartLink capturedSmartLink = smartLinkCaptor.getValue();
+        assertEquals("smartlink123", capturedSmartLink.getId());
+        assertEquals(1, capturedSmartLink.getRules().size());
     }
 }

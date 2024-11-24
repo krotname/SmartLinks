@@ -9,13 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Arrays;
+
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnsupportedOperationException.class)
     public ResponseEntity<String> handleUnsupportedOperationException(UnsupportedOperationException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -41,7 +43,7 @@ public class GlobalExceptionHandler {
     // Обработка остальных исключений
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex) {
-        ex.printStackTrace();
+        log.error(Arrays.toString(ex.getStackTrace()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
     }
 
