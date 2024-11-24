@@ -108,12 +108,12 @@ Content-Type: application/json
       "args": {
         "devices": ["Mobile"]
       },
-      "redirectTo": "https://m.example.com"
+      "redirectTo": "https://m.otus.ru"
     },
     {
       "predicates": [],
       "args": {},
-      "redirectTo": "https://example.com"
+      "redirectTo": "https://otus.ru"
     }
   ]
 }
