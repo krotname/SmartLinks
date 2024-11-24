@@ -81,6 +81,5 @@ tasks.withType<Test> {
 configurations {
     runtimeOnly {
         exclude(group = "commons-logging", module = "commons-logging")
-        exclude("junit", "junit")
     }
 }
