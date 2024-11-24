@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class SmartLinkService {
 
     private final SmartLinkRepository smartLinkRepository;
+
     public void saveSmartLink(SmartLink smartLink) {
         smartLinkRepository.save(smartLink);
     }

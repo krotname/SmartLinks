@@ -7,14 +7,10 @@ import name.krot.smartlinks.command.Command;
 import name.krot.smartlinks.command.CommandFactory;
 import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.SmartLinkNotFoundException;
-import name.krot.smartlinks.predicate.Predicate;
 import name.krot.smartlinks.predicate.PredicateFactory;
 import name.krot.smartlinks.predicate.RequestContext;
-import name.krot.smartlinks.predicate.Rule;
 import name.krot.smartlinks.predicate.SmartLink;
 import name.krot.smartlinks.service.SmartLinkService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
