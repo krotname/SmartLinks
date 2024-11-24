@@ -2,10 +2,13 @@ package name.krot.smartlinks.predicate;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-
-import java.util.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class DeviceTypePredicateTest {
@@ -18,7 +21,7 @@ class DeviceTypePredicateTest {
         context.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X)");
 
         Map<String, Object> args = new HashMap<>();
-        args.put("devices", Arrays.asList("Mobile"));
+        args.put("devices", List.of("Mobile"));
 
         boolean result = deviceTypePredicate.evaluate(context, args);
         assertTrue(result);
@@ -30,7 +33,7 @@ class DeviceTypePredicateTest {
         context.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
         Map<String, Object> args = new HashMap<>();
-        args.put("devices", Arrays.asList("Desktop"));
+        args.put("devices", List.of("Desktop"));
 
         boolean result = deviceTypePredicate.evaluate(context, args);
         assertTrue(result);
@@ -54,7 +57,7 @@ class DeviceTypePredicateTest {
         context.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
         Map<String, Object> args = new HashMap<>();
-        args.put("devices", Arrays.asList("Mobile"));
+        args.put("devices", List.of("Mobile"));
 
         boolean result = deviceTypePredicate.evaluate(context, args);
         assertFalse(result);

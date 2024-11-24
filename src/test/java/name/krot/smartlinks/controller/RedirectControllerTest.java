@@ -15,14 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import org.junit.jupiter.api.*;
-import org.mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -95,7 +87,7 @@ class RedirectControllerTest {
         smartLink.setId("smartlink123");
         List<Rule> rules = new ArrayList<>();
         Rule rule = new Rule();
-        rule.setPredicates(Arrays.asList("Language"));
+        rule.setPredicates(List.of("Language"));
         Map<String, Object> args = new HashMap<>();
         args.put("language", Arrays.asList("ru", "ru-RU"));
         rule.setArgs(args);

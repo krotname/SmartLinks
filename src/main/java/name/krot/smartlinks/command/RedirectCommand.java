@@ -1,7 +1,7 @@
 package name.krot.smartlinks.command;
 
-import name.krot.smartlinks.predicate.RequestContext;
 import name.krot.smartlinks.model.Rule;
+import name.krot.smartlinks.predicate.RequestContext;
 import org.springframework.http.ResponseEntity;
 
 public abstract class RedirectCommand implements Command<ResponseEntity<?>> {

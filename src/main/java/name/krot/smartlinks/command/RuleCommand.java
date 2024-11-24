@@ -1,9 +1,9 @@
 package name.krot.smartlinks.command;
 
+import name.krot.smartlinks.model.Rule;
 import name.krot.smartlinks.predicate.Predicate;
 import name.krot.smartlinks.predicate.PredicateFactory;
 import name.krot.smartlinks.predicate.RequestContext;
-import name.krot.smartlinks.model.Rule;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

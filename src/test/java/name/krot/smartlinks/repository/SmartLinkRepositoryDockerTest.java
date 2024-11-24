@@ -38,7 +38,20 @@ class SmartLinkRepositoryDockerTest {
         registry.add("spring.redis.host", redisContainer::getHost);
         registry.add("spring.redis.port", redisContainer::getFirstMappedPort);
         // If your Redis requires a password, set it here
-         registry.add("spring.redis.password", () -> "password");
+        registry.add("spring.redis.password", () -> "password");
+    }
+
+    @Test
+    void testSaveAndFindById() {
+        SmartLink smartLink = new SmartLink();
+        smartLink.setId("smartlink123");
+
+        smartLinkRepository.save(smartLink);
+
+        SmartLink result = smartLinkRepository.findById("smartlink123");
+
+        assertNotNull(result);
+        assertEquals("smartlink123", result.getId());
     }
 
     @TestConfiguration
@@ -61,18 +74,5 @@ class SmartLinkRepositoryDockerTest {
             lettuceConnectionFactory.setPort(redisContainer.getFirstMappedPort());
             return lettuceConnectionFactory;
         }
-    }
-
-    @Test
-    void testSaveAndFindById() {
-        SmartLink smartLink = new SmartLink();
-        smartLink.setId("smartlink123");
-
-        smartLinkRepository.save(smartLink);
-
-        SmartLink result = smartLinkRepository.findById("smartlink123");
-
-        assertNotNull(result);
-        assertEquals("smartlink123", result.getId());
     }
 }
