@@ -47,24 +47,23 @@ repositories {
 }
 
 dependencies {
-    implementation("commons-validator:commons-validator:1.9.0") {
-        exclude("commons-logging", "commons-logging")
-    }
+    implementation("commons-validator:commons-validator:1.9.0")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    implementation("com.google.guava:guava:33.3.0-jre")
+
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    implementation("com.google.guava:guava:33.3.0-jre")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter:1.20.4")
-    {
-        exclude("junit", "junit")
-    }
     testImplementation("org.testcontainers:testcontainers:1.20.4")
     testImplementation("com.redis:testcontainers-redis:2.2.2")
 
@@ -82,5 +81,6 @@ tasks.withType<Test> {
 configurations {
     runtimeOnly {
         exclude(group = "commons-logging", module = "commons-logging")
+        exclude("junit", "junit")
     }
 }
