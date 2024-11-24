@@ -37,7 +37,6 @@ class SmartLinkRepositoryDockerTest {
     static void redisProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.redis.host", redisContainer::getHost);
         registry.add("spring.redis.port", redisContainer::getFirstMappedPort);
-        // If your Redis requires a password, set it here
         registry.add("spring.redis.password", () -> "password");
     }
 
