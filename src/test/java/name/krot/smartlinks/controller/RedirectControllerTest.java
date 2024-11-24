@@ -127,7 +127,7 @@ class RedirectControllerTest {
                 "        \"endWith\": \"2024-12-01T00:00:00\",\n" +
                 "        \"language\": [\"ru\", \"ru-RU\"]\n" +
                 "      },\n" +
-                "      \"redirectTo\": \"https://example.com/ru\"\n" +
+                "      \"redirectTo\": \"https://otus.ru/ru\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}";
