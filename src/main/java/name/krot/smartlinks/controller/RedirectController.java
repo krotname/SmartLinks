@@ -3,6 +3,8 @@ package name.krot.smartlinks.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import name.krot.smartlinks.command.Command;
+import name.krot.smartlinks.command.CommandFactory;
 import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.SmartLinkNotFoundException;
 import name.krot.smartlinks.predicate.Predicate;
@@ -35,51 +37,41 @@ public class RedirectController {
 
     @PostMapping("/api/smartlinks")
     public ResponseEntity<String> createSmartLink(@RequestBody SmartLink smartLink) {
+        log.info("Received POST request, smartLink: {}", smartLink);
+
         smartLinkService.saveSmartLink(smartLink);
         return ResponseEntity.status(HttpStatus.CREATED).body("Smart Link created successfully");
     }
 
     @GetMapping("/s/{smartLinkId}")
     public ResponseEntity<?> redirect(@PathVariable String smartLinkId, HttpServletRequest request) {
-        log.info("Received request for SmartLink ID: {}", smartLinkId);
-
+        log.info("Received GET request, smartLinkId: {}, HttpServletRequest: {}", smartLinkId, request);
         SmartLink smartLink = smartLinkService.getSmartLinkById(smartLinkId);
         if (smartLink == null) {
             throw new SmartLinkNotFoundException("Smart Link not found");
         }
 
-        List<Rule> rules = smartLink.getRules();
-        if (rules == null || rules.isEmpty()) {
-            throw new NoMatchingRuleException("No rules defined for this Smart Link");
-        }
-
         RequestContext context = buildRequestContext(request);
 
-        for (Rule rule : rules) {
-            boolean allPredicatesTrue = true;
-            for (String predicateName : rule.getPredicates()) {
-                Predicate predicate = predicateFactory.createPredicate(predicateName);
-                if (!predicate.evaluate(context, rule.getArgs())) {
-                    allPredicatesTrue = false;
-                    break;
-                }
-            }
-            if (allPredicatesTrue) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setLocation(URI.create(rule.getRedirectTo()));
-                return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        CommandFactory commandFactory = new CommandFactory(predicateFactory);
+        List<Command<ResponseEntity<?>>> commands = commandFactory.createCommands(context, smartLink);
+
+        for (Command<ResponseEntity<?>> command : commands) {
+            ResponseEntity<?> response = command.execute();
+            if (response != null) {
+                return response; // Команда выполнилась успешно
             }
         }
 
         throw new NoMatchingRuleException("No matching rule found for this Smart Link");
     }
 
-
     private RequestContext buildRequestContext(HttpServletRequest request) {
         RequestContext context = new RequestContext();
         context.setRequestTime(LocalDateTime.now());
         context.setAcceptLanguage(request.getHeader("Accept-Language"));
         context.setUserAgent(request.getHeader("User-Agent"));
+        // Установить другие параметры
         return context;
     }
 }
