@@ -1,7 +1,7 @@
 package name.krot.smartlinks.service;
 
 import lombok.RequiredArgsConstructor;
-import name.krot.smartlinks.predicate.SmartLink;
+import name.krot.smartlinks.model.SmartLink;
 import name.krot.smartlinks.repository.SmartLinkRepository;
 import org.springframework.stereotype.Component;
 

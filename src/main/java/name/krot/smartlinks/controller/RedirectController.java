@@ -9,7 +9,7 @@ import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.SmartLinkNotFoundException;
 import name.krot.smartlinks.predicate.PredicateFactory;
 import name.krot.smartlinks.predicate.RequestContext;
-import name.krot.smartlinks.predicate.SmartLink;
+import name.krot.smartlinks.model.SmartLink;
 import name.krot.smartlinks.service.SmartLinkService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

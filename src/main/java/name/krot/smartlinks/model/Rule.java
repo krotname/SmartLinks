@@ -1,4 +1,4 @@
-package name.krot.smartlinks.predicate;
+package name.krot.smartlinks.model;
 
 import lombok.Data;
 

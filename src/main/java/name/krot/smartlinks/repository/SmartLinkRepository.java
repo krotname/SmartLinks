@@ -1,7 +1,7 @@
 package name.krot.smartlinks.repository;
 
 import lombok.RequiredArgsConstructor;
-import name.krot.smartlinks.predicate.SmartLink;
+import name.krot.smartlinks.model.SmartLink;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
