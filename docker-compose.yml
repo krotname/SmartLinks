@@ -2,6 +2,7 @@ version: '3.9'
 
 volumes:
   redis_data:
+  gradle_cache17:
 services:
   redis:
     container_name: redis
@@ -13,3 +14,20 @@ services:
       - "6379:6379"
     volumes:
       - 'redis_data:/bitnami/redis/data'
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GRADLE_USER_HOME: /home/gradle/.gradle
+    image: smart-links:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      # Монтирование тома для кэширования Gradle-зависимостей
+      - gradle_cache17:/home/gradle/.gradle
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: always
+    depends_on:
+      - redis

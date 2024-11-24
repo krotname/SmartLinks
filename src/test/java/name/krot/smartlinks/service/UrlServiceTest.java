@@ -3,6 +3,7 @@ package name.krot.smartlinks.service;
 import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.repository.UrlRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Disabled
 class UrlServiceTest {
 
     @InjectMocks

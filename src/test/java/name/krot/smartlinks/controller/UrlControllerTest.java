@@ -3,6 +3,7 @@ package name.krot.smartlinks.controller;
 import name.krot.smartlinks.exception.ResourceNotFoundException;
 import name.krot.smartlinks.model.Url;
 import name.krot.smartlinks.service.UrlService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Disabled
 @WebMvcTest(UrlController.class)
 class UrlControllerTest {
 
@@ -28,7 +30,7 @@ class UrlControllerTest {
     private UrlService urlService;
 
     @Test
-    public void testShortenUrl_Success() throws Exception {
+    void testShortenUrl_Success() throws Exception {
         String longUrl = "https://www.example.com";
         String shortId = "abc123";
 

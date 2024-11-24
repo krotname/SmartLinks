@@ -12,3 +12,5 @@ springdoc:
     disable-swagger-default-url: true
     url: /v3/api-docs
     use-root-path: true
+server:
+  port: 8080
