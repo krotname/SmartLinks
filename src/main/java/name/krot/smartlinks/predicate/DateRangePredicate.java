@@ -1,5 +1,7 @@
 package name.krot.smartlinks.predicate;
 
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 

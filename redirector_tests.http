@@ -4,7 +4,7 @@ POST http://localhost:8080/api/smartlinks
 Content-Type: application/json
 
 {
-  "id": "smartlink123",
+  "id": "smartlink12345",
   "rules": [
     {
       "predicates": ["DateRange", "Language"],
@@ -34,7 +34,7 @@ Content-Type: application/json
 
 ### Тест получения умной ссылки
 
-GET http://localhost:8080/s/smartlink123
+GET http://localhost:8080/s/smartlink12345
 Accept: application/json
 
 ###
