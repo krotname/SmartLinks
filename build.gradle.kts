@@ -26,7 +26,9 @@ repositories {
 }
 
 dependencies {
-    implementation("commons-validator:commons-validator:1.9.0")
+    implementation("commons-validator:commons-validator:1.9.0") {
+        exclude("commons-logging", "commons-logging")
+    }
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -47,4 +49,10 @@ dependencyManagement {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+configurations {
+    runtimeOnly {
+        exclude(group = "commons-logging", module = "commons-logging")
+    }
 }
