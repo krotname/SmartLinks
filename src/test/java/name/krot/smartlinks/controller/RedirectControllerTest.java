@@ -58,7 +58,7 @@ class RedirectControllerTest {
         args.put("endWith", "2024-12-01T00:00:00");
         args.put("language", Arrays.asList("ru", "ru-RU"));
         rule.setArgs(args);
-        rule.setRedirectTo("https://example.com/ru");
+        rule.setRedirectTo("https://otus.ru/ru");
         rules.add(rule);
         smartLink.setRules(rules);
 
@@ -72,7 +72,7 @@ class RedirectControllerTest {
         mockMvc.perform(get("/s/smartlink123")
                         .header("Accept-Language", "ru-RU"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", "https://example.com/ru"));
+                .andExpect(header().string("Location", "https://otus.ru/ru"));
     }
 
     @Test
@@ -85,7 +85,7 @@ class RedirectControllerTest {
         Map<String, Object> args = new HashMap<>();
         args.put("language", Arrays.asList("ru", "ru-RU"));
         rule.setArgs(args);
-        rule.setRedirectTo("https://example.com/ru");
+        rule.setRedirectTo("https://otus.ru/ru");
         rules.add(rule);
         smartLink.setRules(rules);
 

@@ -16,9 +16,9 @@ class SmartLinkTest {
         assertEquals("smartlink123", smartLink.getId());
 
         Rule rule = new Rule();
-        rule.setRedirectTo("https://example.com");
+        rule.setRedirectTo("https://otus.ru");
         smartLink.setRules(Collections.singletonList(rule));
         assertEquals(1, smartLink.getRules().size());
-        assertEquals("https://example.com", smartLink.getRules().get(0).getRedirectTo());
+        assertEquals("https://otus.ru", smartLink.getRules().get(0).getRedirectTo());
     }
 }

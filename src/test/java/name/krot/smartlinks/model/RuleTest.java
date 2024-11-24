@@ -15,11 +15,11 @@ class RuleTest {
     void testRuleGettersAndSetters() {
         Rule rule = new Rule();
         rule.setPredicates(Arrays.asList("Language", "DateRange"));
-        rule.setRedirectTo("https://example.com");
+        rule.setRedirectTo("https://otus.ru");
         rule.setArgs(new HashMap<>());
 
         assertEquals(2, rule.getPredicates().size());
-        assertEquals("https://example.com", rule.getRedirectTo());
+        assertEquals("https://otus.ru", rule.getRedirectTo());
         assertNotNull(rule.getArgs());
     }
 }

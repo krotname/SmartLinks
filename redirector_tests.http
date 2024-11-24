@@ -13,19 +13,19 @@ Content-Type: application/json
         "endWith": "2024-12-01T00:00:00",
         "language": ["ru", "ru-RU"]
       },
-      "redirectTo": "https://example.com/ru"
+      "redirectTo": "https://otus.ru/ru"
     },
     {
       "predicates": ["Language"],
       "args": {
         "language": ["en", "en-US"]
       },
-      "redirectTo": "https://example.com/en"
+      "redirectTo": "https://otus.ru/en"
     },
     {
       "predicates": [],
       "args": {},
-      "redirectTo": "https://example.com/default"
+      "redirectTo": "https://otus.ru/default"
     }
   ]
 }

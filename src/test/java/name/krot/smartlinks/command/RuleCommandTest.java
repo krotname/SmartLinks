@@ -46,7 +46,7 @@ class RuleCommandTest {
         args.put("endWith", "2024-12-01T00:00:00");
         args.put("language", Arrays.asList("ru", "ru-RU"));
         rule.setArgs(args);
-        rule.setRedirectTo("https://example.com/ru");
+        rule.setRedirectTo("https://otus.ru/ru");
 
         when(predicateFactory.createPredicate("DateRange")).thenReturn(dateRangePredicate);
         when(predicateFactory.createPredicate("Language")).thenReturn(languagePredicate);
@@ -59,7 +59,7 @@ class RuleCommandTest {
 
         assertNotNull(response);
         assertEquals(302, response.getStatusCodeValue());
-        assertEquals("https://example.com/ru", response.getHeaders().getLocation().toString());
+        assertEquals("https://otus.ru/ru", response.getHeaders().getLocation().toString());
     }
 
     @Test
@@ -75,7 +75,7 @@ class RuleCommandTest {
         args.put("endWith", "2024-12-01T00:00:00");
         args.put("language", Arrays.asList("ru", "ru-RU"));
         rule.setArgs(args);
-        rule.setRedirectTo("https://example.com/ru");
+        rule.setRedirectTo("https://otus.ru/ru");
 
         when(predicateFactory.createPredicate("DateRange")).thenReturn(dateRangePredicate);
         when(predicateFactory.createPredicate("Language")).thenReturn(languagePredicate);
