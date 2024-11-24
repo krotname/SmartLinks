@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.3.2"
     id("io.spring.dependency-management") version "1.1.6"
 }
@@ -17,6 +18,26 @@ java {
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory = layout.buildDirectory.dir("JacocoReportDir")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
 }
 
