@@ -54,7 +54,7 @@ public class RedirectController {
         for (Command<ResponseEntity<?>> command : commands) {
             ResponseEntity<?> response = command.execute();
             if (response != null) {
-                return response; // Команда выполнилась успешно
+                return response;
             }
         }
 
@@ -66,7 +66,6 @@ public class RedirectController {
         context.setRequestTime(LocalDateTime.now());
         context.setAcceptLanguage(request.getHeader("Accept-Language"));
         context.setUserAgent(request.getHeader("User-Agent"));
-        // Установить другие параметры
         return context;
     }
 }

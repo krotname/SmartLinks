@@ -11,7 +11,6 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // Настройка соединения с Redis
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory();
         lettuceConnectionFactory.setPassword("password");
         lettuceConnectionFactory.setPort(6379);
@@ -20,7 +19,6 @@ public class RedisConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
-        // Настройка RedisTemplate для сериализации объектов
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
         return template;
