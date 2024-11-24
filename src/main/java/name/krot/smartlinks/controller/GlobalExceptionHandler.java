@@ -1,7 +1,9 @@
 package name.krot.smartlinks.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.ResourceNotFoundException;
+import name.krot.smartlinks.exception.SmartLinkNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,9 +28,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(SmartLinkNotFoundException.class)
+    public ResponseEntity<String> handleSmartLinkNotFoundException(SmartLinkNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NoMatchingRuleException.class)
+    public ResponseEntity<String> handleNoMatchingRuleException(NoMatchingRuleException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    // Обработка остальных исключений
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex) {
-        log.error(ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
     }
+
 }
