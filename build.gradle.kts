@@ -40,6 +40,13 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("com.google.guava:guava:33.3.0-jre")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.4")
+    {
+        exclude("junit", "junit")
+    }
+    testImplementation("org.testcontainers:testcontainers:1.20.4")
+    testImplementation("com.redis:testcontainers-redis:2.2.2")
+
 }
 dependencyManagement {
     imports {
