@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: SmartLinks
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: password
+springdoc:
+  swagger-ui:
+    config-url: /v3/api-docs/swagger-config
+    disable-swagger-default-url: true
+    url: /v3/api-docs
+    use-root-path: true
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+logging:
+  level:
+    root: INFO
+    name.krot.smartlinks: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

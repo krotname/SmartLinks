@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smart-links-deployment
+  labels:
+    app: smart-links
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: smart-links
+  template:
+    metadata:
+      labels:
+        app: smart-links
+    spec:
+      containers:
+        - name: smart-links-container
+          image: your-dockerhub-username/smart-links-name:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30

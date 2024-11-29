@@ -1,0 +1,121 @@
+### Тест создания умной ссылки с правилами
+
+POST http://localhost:8080/api/smartlinks
+Content-Type: application/json
+
+{
+  "id": "smartlink123456",
+  "rules": [
+    {
+      "predicates": ["DateRange", "Language"],
+      "args": {
+        "startWith": "2024-11-01T00:00:00",
+        "endWith": "2024-12-01T00:00:00",
+        "language": ["ru", "ru-RU"]
+      },
+      "redirectTo": "https://otus.ru/ru"
+    },
+    {
+      "predicates": ["Language"],
+      "args": {
+        "language": ["en", "en-US"]
+      },
+      "redirectTo": "https://otus.ru/en"
+    },
+    {
+      "predicates": [],
+      "args": {},
+      "redirectTo": "https://otus.ru/default"
+    }
+  ]
+}
+
+### Тест получения умной ссылки
+
+GET http://localhost:8080/s/smartlink123456
+Accept: application/json
+
+### Тест редиректа с русским языком
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: ru-RU
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Тест редиректа с английским языком
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Тест редиректа с неподдерживаемым языком (должен сработать дефолтное правило)
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: es-ES
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Тест редиректа по несуществующей умной ссылке
+
+GET http://localhost:8080/s/nonexistent
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Тест 1: Существующая умная ссылка с срабатывающим правилом
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: ru-RU
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Существующая умная ссылка без срабатывающих правил
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: es-ES
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Несуществующая умная ссылка
+
+GET http://localhost:8080/s/nonexistent
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Существующая умная ссылка с устройством Mobile
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X)
+
+### Существующая умная ссылка с устройством Desktop
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Умная ссылка с дефолтным правилом
+
+GET http://localhost:8080/s/smartlink123
+Accept-Language: fr-FR
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Тест создания умной ссылки с DeviceTypePredicate
+
+POST http://localhost:8080/api/smartlinks
+Content-Type: application/json
+
+{
+  "id": "smartlinkDevice",
+  "rules": [
+    {
+      "predicates": ["DeviceType"],
+      "args": {
+        "devices": ["Mobile"]
+      },
+      "redirectTo": "https://m.otus.ru"
+    },
+    {
+      "predicates": [],
+      "args": {},
+      "redirectTo": "https://otus.ru"
+    }
+  ]
+}
+
+###
