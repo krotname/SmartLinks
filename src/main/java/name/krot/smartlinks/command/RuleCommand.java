@@ -23,13 +23,13 @@ public class RuleCommand extends RedirectCommand {
 
     @Override
     public ResponseEntity<?> execute() {
-        List<PredicateCommand> predicateCommands = new ArrayList<>();
+        List<Command<Boolean>> predicateCommands = new ArrayList<>();
         for (String predicateName : rule.getPredicates()) {
             Predicate predicate = predicateFactory.createPredicate(predicateName);
             predicateCommands.add(new PredicateCommandImpl(predicate, context, rule.getArgs()));
         }
 
-        boolean allPredicatesTrue = predicateCommands.stream().allMatch(PredicateCommand::execute);
+        boolean allPredicatesTrue = predicateCommands.stream().allMatch(Command::execute);
 
         if (allPredicatesTrue) {
             HttpHeaders headers = new HttpHeaders();

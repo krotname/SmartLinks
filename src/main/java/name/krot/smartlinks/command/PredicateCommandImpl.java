@@ -5,7 +5,7 @@ import name.krot.smartlinks.predicate.RequestContext;
 
 import java.util.Map;
 
-public class PredicateCommandImpl implements PredicateCommand {
+public class PredicateCommandImpl implements Command<Boolean> {
     private final Predicate predicate;
     private final RequestContext context;
     private final Map<String, Object> args;
@@ -17,7 +17,7 @@ public class PredicateCommandImpl implements PredicateCommand {
     }
 
     @Override
-    public boolean execute() {
+    public Boolean execute() {
         return predicate.evaluate(context, args);
     }
 }
