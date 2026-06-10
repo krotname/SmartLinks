@@ -1,5 +1,13 @@
 # SmartLinks
 
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/krotname/SmartLinks/actions/workflows/gradle.yml?query=branch%3Amain)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-17-007396)](https://adoptium.net/)
+[![Gradle](https://img.shields.io/badge/Gradle-build-02303A)](https://gradle.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F)](https://spring.io/projects/spring-boot)
+[![Redis](https://img.shields.io/badge/Redis-routing-DC382D)](https://redis.io/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-manifests-326CE5)](https://kubernetes.io/)
+
 Описание:
 
 SmartLinks — это высоконагруженное веб-приложение, предназначенное для преобразования длинных URL-адресов в короткие и
