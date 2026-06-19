@@ -1,13 +1,15 @@
 package name.krot.smartlinks.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +23,30 @@ public class Rule implements Serializable {
     private Map<String, Object> args;
     @NotNull(message = "Redirect URL cannot be null")
     @Size(max = 2048, message = "Redirect URL cannot exceed 2048 characters")
-    @Pattern(regexp = "^(http|https)://.*$", message = "Redirect URL must be a valid URL")
     private String redirectTo;
+
+    @JsonIgnore
+    @AssertTrue(message = "Redirect URL must be an absolute http(s) URL with host")
+    public boolean isRedirectToValid() {
+        return isValidRedirectUrl(redirectTo);
+    }
+
+    public static boolean isValidRedirectUrl(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        try {
+            URI uri = URI.create(value.trim());
+            String scheme = uri.getScheme();
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+                return false;
+            }
+            if (uri.getHost() == null || uri.getHost().isBlank()) {
+                return false;
+            }
+            return uri.getRawUserInfo() == null;
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
+    }
 }

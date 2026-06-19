@@ -91,4 +91,30 @@ class RuleCommandTest {
 
         assertNull(response);
     }
+
+    @Test
+    void testRuleCommandDoesNotRedirectToInvalidStoredUrl() {
+        RequestContext context = new RequestContext();
+        context.setRequestTime(LocalDateTime.of(2024, 11, 15, 12, 0));
+        context.setAcceptLanguage("ru-RU");
+
+        Rule rule = new Rule();
+        rule.setPredicates(Arrays.asList("DateRange", "Language"));
+        Map<String, Object> args = new HashMap<>();
+        args.put("startWith", "2024-11-01T00:00:00");
+        args.put("endWith", "2024-12-01T00:00:00");
+        args.put("language", Arrays.asList("ru", "ru-RU"));
+        rule.setArgs(args);
+        rule.setRedirectTo("https:otus.ru/no-host");
+
+        when(predicateFactory.createPredicate("DateRange")).thenReturn(dateRangePredicate);
+        when(predicateFactory.createPredicate("Language")).thenReturn(languagePredicate);
+
+        when(dateRangePredicate.evaluate(context, args)).thenReturn(true);
+        when(languagePredicate.evaluate(context, args)).thenReturn(true);
+
+        RuleCommand command = new RuleCommand(context, rule, predicateFactory);
+
+        assertNull(command.execute());
+    }
 }

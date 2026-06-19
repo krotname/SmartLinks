@@ -32,11 +32,22 @@ public class RuleCommand extends RedirectCommand {
         boolean allPredicatesTrue = predicateCommands.stream().allMatch(Command::execute);
 
         if (allPredicatesTrue) {
+            URI redirectUri = safeRedirectUri(rule.getRedirectTo());
+            if (redirectUri == null) {
+                return null;
+            }
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(rule.getRedirectTo()));
+            headers.setLocation(redirectUri);
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
 
         return null;
+    }
+
+    private URI safeRedirectUri(String redirectTo) {
+        if (!Rule.isValidRedirectUrl(redirectTo)) {
+            return null;
+        }
+        return URI.create(redirectTo.trim());
     }
 }

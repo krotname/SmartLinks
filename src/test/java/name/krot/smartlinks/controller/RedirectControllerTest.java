@@ -145,4 +145,25 @@ class RedirectControllerTest {
         assertEquals("smartlink123", capturedSmartLink.getId());
         assertEquals(1, capturedSmartLink.getRules().size());
     }
+
+    @Test
+    void testCreateSmartLinkRejectsRedirectWithoutHost() throws Exception {
+        String smartLinkJson = "{\n" +
+                "  \"id\": \"smartlink123\",\n" +
+                "  \"rules\": [\n" +
+                "    {\n" +
+                "      \"predicates\": [\"Language\"],\n" +
+                "      \"args\": {\n" +
+                "        \"language\": [\"ru\"]\n" +
+                "      },\n" +
+                "      \"redirectTo\": \"https:otus.ru/no-host\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        mockMvc.perform(post("/api/smartlinks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(smartLinkJson))
+                .andExpect(status().isBadRequest());
+    }
 }
