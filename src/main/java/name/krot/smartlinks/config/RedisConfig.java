@@ -10,6 +10,8 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.Optional;
+
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
@@ -22,9 +24,10 @@ public class RedisConfig {
                 redisProperties.getHost(),
                 redisProperties.getPort()
         );
-        if (redisProperties.getPassword() != null && redisProperties.getPassword().length() > 0) {
-            configuration.setPassword(RedisPassword.of(redisProperties.getPassword()));
-        }
+        Optional.ofNullable(redisProperties.getPassword())
+                .filter(password -> password.length() > 0)
+                .map(RedisPassword::of)
+                .ifPresent(configuration::setPassword);
         return new LettuceConnectionFactory(configuration);
     }
 

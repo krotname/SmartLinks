@@ -2,6 +2,7 @@ package name.krot.smartlinks.predicate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class PredicateArguments {
 
@@ -12,25 +13,31 @@ public final class PredicateArguments {
     }
 
     public String getString(String key) {
-        Object value = require(key);
-        if (value instanceof String stringValue) {
-            return stringValue;
-        }
-        throw new IllegalArgumentException("Predicate argument '%s' must be a string".formatted(key));
+        return Optional.ofNullable(require(key))
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Predicate argument '%s' must be a string".formatted(key)
+                ));
     }
 
     public List<String> getStringList(String key) {
-        Object value = require(key);
-        if (value instanceof List<?> listValue && listValue.stream().allMatch(String.class::isInstance)) {
-            return listValue.stream().map(String.class::cast).toList();
-        }
-        throw new IllegalArgumentException("Predicate argument '%s' must be a list of strings".formatted(key));
+        return Optional.ofNullable(require(key))
+                .filter(value -> value instanceof List<?>)
+                .map(value -> (List<?>) value)
+                .filter(listValue -> listValue.stream().allMatch(String.class::isInstance))
+                .map(listValue -> listValue.stream().map(String.class::cast).toList())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Predicate argument '%s' must be a list of strings".formatted(key)
+                ));
     }
 
     private Object require(String key) {
-        if (!values.containsKey(key)) {
-            throw new IllegalArgumentException("Missing predicate argument '%s'".formatted(key));
-        }
-        return values.get(key);
+        return Optional.of(values)
+                .filter(currentValues -> currentValues.containsKey(key))
+                .map(currentValues -> currentValues.get(key))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Missing predicate argument '%s'".formatted(key)
+                ));
     }
 }

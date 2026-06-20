@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,10 +20,7 @@ public class PredicateFactoryImpl implements PredicateFactory {
 
     @Override
     public Predicate createPredicate(String name) {
-        Predicate predicate = predicatesByName.get(name);
-        if (predicate == null) {
-            throw new IllegalArgumentException("Unknown predicate: " + name);
-        }
-        return predicate;
+        return Optional.ofNullable(predicatesByName.get(name))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown predicate: " + name));
     }
 }
