@@ -10,10 +10,13 @@ import name.krot.smartlinks.predicate.RequestContext;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.RU_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.SMART_LINK_ID;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContext;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.smartLink;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -32,22 +35,21 @@ class RuleBasedRedirectResolverTest {
 
     @Test
     void resolvesRedirectForExistingSmartLink() {
-        SmartLink smartLink = new SmartLink();
-        smartLink.setId("smartlink123");
-        RequestContext context = new RequestContext(LocalDateTime.now(), "ru-RU", null);
-        URI redirectUri = URI.create("https://otus.ru/ru");
+        SmartLink smartLink = smartLink();
+        RequestContext context = requestContext("ru-RU");
+        URI redirectUri = URI.create(RU_REDIRECT_URL);
         List<RedirectCommand> commands = List.of(ignored -> Optional.of(redirectUri));
 
-        when(smartLinkService.findSmartLinkById("smartlink123")).thenReturn(Optional.of(smartLink));
+        when(smartLinkService.findSmartLinkById(SMART_LINK_ID)).thenReturn(Optional.of(smartLink));
         when(redirectCommandFactory.createCommands(smartLink)).thenReturn(commands);
         when(redirectCommandChain.execute(commands, context)).thenReturn(Optional.of(redirectUri));
 
-        assertEquals(redirectUri, resolver.resolveRedirect("smartlink123", context));
+        assertEquals(redirectUri, resolver.resolveRedirect(SMART_LINK_ID, context));
     }
 
     @Test
     void throwsWhenSmartLinkDoesNotExist() {
-        RequestContext context = new RequestContext(LocalDateTime.now(), null, null);
+        RequestContext context = requestContext(null);
         when(smartLinkService.findSmartLinkById("missing")).thenReturn(Optional.empty());
 
         assertThrows(SmartLinkNotFoundException.class, () -> resolver.resolveRedirect("missing", context));
@@ -55,14 +57,13 @@ class RuleBasedRedirectResolverTest {
 
     @Test
     void throwsWhenNoRuleMatches() {
-        SmartLink smartLink = new SmartLink();
-        smartLink.setId("smartlink123");
-        RequestContext context = new RequestContext(LocalDateTime.now(), "en-US", null);
+        SmartLink smartLink = smartLink();
+        RequestContext context = requestContext("en-US");
 
-        when(smartLinkService.findSmartLinkById("smartlink123")).thenReturn(Optional.of(smartLink));
+        when(smartLinkService.findSmartLinkById(SMART_LINK_ID)).thenReturn(Optional.of(smartLink));
         when(redirectCommandFactory.createCommands(smartLink)).thenReturn(List.of());
         when(redirectCommandChain.execute(List.of(), context)).thenReturn(Optional.empty());
 
-        assertThrows(NoMatchingRuleException.class, () -> resolver.resolveRedirect("smartlink123", context));
+        assertThrows(NoMatchingRuleException.class, () -> resolver.resolveRedirect(SMART_LINK_ID, context));
     }
 }

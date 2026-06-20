@@ -8,6 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.DEFAULT_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.RU_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.fallbackRule;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.smartLink;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -20,19 +24,10 @@ class RuleRedirectCommandFactoryTest {
 
     @Test
     void createsOneCommandPerRule() {
-        SmartLink smartLink = new SmartLink();
-        smartLink.setId("smartlink123");
-        smartLink.setRules(List.of(rule("https://otus.ru/ru"), rule("https://otus.ru/default")));
+        SmartLink smartLink = smartLink(fallbackRule(RU_REDIRECT_URL), fallbackRule(DEFAULT_REDIRECT_URL));
 
         List<RedirectCommand> commands = factory.createCommands(smartLink);
 
         assertEquals(2, commands.size());
-    }
-
-    private static Rule rule(String redirectTo) {
-        Rule rule = new Rule();
-        rule.setPredicates(List.of());
-        rule.setRedirectTo(redirectTo);
-        return rule;
     }
 }
