@@ -1,5 +1,7 @@
 # SmartLinks
 
+[English](README.en.md)
+
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/krotname/SmartLinks/actions/workflows/gradle.yml?query=branch%3Amain)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-007396)](https://adoptium.net/)
@@ -33,7 +35,7 @@ SmartLinks — это высоконагруженное веб-приложен
     Фреймворк: Spring Boot
     База: Redis для быстрого доступа к часто запрашиваемым данным
     Инструменты сборки: Gradle
-    Контейнеризация: Docker, K8S 
+    Контейнеризация: Docker, K8S
     Документация API: Swagger
 
 # Характеристики и Преимущества:
