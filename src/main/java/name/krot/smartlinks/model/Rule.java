@@ -5,7 +5,6 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -18,14 +17,16 @@ import java.util.Optional;
 
 import static java.util.function.Predicate.not;
 
-@Data
 public class Rule implements Serializable {
     @Serial
     private static final long serialVersionUID = -4862926644813433701L;
+
     @NotNull(message = "Predicates list cannot be null")
     private List<@NotBlank(message = "Predicate name cannot be blank") String> predicates = new ArrayList<>();
+
     @NotNull(message = "Args cannot be null")
     private Map<String, Object> args = new HashMap<>();
+
     @NotNull(message = "Redirect URL cannot be null")
     @Size(max = 2048, message = "Redirect URL cannot exceed 2048 characters")
     private String redirectTo;
@@ -69,5 +70,29 @@ public class Rule implements Serializable {
 
     private static boolean hasNoUserInfo(URI uri) {
         return uri.getRawUserInfo() == null;
+    }
+
+    public List<String> getPredicates() {
+        return predicates;
+    }
+
+    public void setPredicates(List<String> predicates) {
+        this.predicates = predicates;
+    }
+
+    public Map<String, Object> getArgs() {
+        return args;
+    }
+
+    public void setArgs(Map<String, Object> args) {
+        this.args = args;
+    }
+
+    public String getRedirectTo() {
+        return redirectTo;
+    }
+
+    public void setRedirectTo(String redirectTo) {
+        this.redirectTo = redirectTo;
     }
 }

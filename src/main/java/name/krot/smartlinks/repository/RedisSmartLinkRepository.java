@@ -1,6 +1,5 @@
 package name.krot.smartlinks.repository;
 
-import lombok.RequiredArgsConstructor;
 import name.krot.smartlinks.model.SmartLink;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -8,12 +7,15 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class RedisSmartLinkRepository implements SmartLinkRepository {
 
     private static final String KEY = "SmartLink";
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public RedisSmartLinkRepository(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public void save(SmartLink smartLink) {

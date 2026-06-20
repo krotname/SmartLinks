@@ -1,17 +1,14 @@
 volumes:
   redis_data:
-  gradle_cache17:
+  gradle_cache25:
 services:
   redis:
     container_name: redis
-    image: docker.io/bitnami/redis:7.0
-    environment:
-      REDIS_PASSWORD: password
-      REDIS_PORT_NUMBER: 6379
+    image: redis:8.2-alpine@sha256:94589dc90eb8b7eb920f3a9a6d85657e73fd20db61410719500b9c5ba0548d9a
     ports:
       - "6379:6379"
     volumes:
-      - 'redis_data:/bitnami/redis/data'
+      - redis_data:/data
   app:
     build:
       context: .
@@ -22,8 +19,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # Монтирование тома для кэширования Gradle-зависимостей
-      - gradle_cache17:/home/gradle/.gradle
+      - gradle_cache25:/home/gradle/.gradle
     environment:
       - SPRING_PROFILES_ACTIVE=dev
     restart: always
