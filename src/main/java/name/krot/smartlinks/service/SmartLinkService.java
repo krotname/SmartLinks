@@ -1,22 +1,11 @@
 package name.krot.smartlinks.service;
 
-import lombok.RequiredArgsConstructor;
 import name.krot.smartlinks.model.SmartLink;
-import name.krot.smartlinks.repository.SmartLinkRepository;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-public class SmartLinkService {
+import java.util.Optional;
 
-    private final SmartLinkRepository smartLinkRepository;
+public interface SmartLinkService {
+    void saveSmartLink(SmartLink smartLink);
 
-    public void saveSmartLink(SmartLink smartLink) {
-        smartLinkRepository.save(smartLink);
-    }
-
-    public SmartLink getSmartLinkById(String id) {
-        return smartLinkRepository.findById(id);
-    }
-
+    Optional<SmartLink> findSmartLinkById(String id);
 }

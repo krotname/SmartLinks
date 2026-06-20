@@ -1,8 +1,7 @@
 package name.krot.smartlinks.predicate;
 
-import java.util.Map;
-
-@FunctionalInterface
 public interface Predicate {
-    boolean evaluate(RequestContext context, Map<String, Object> args);
+    String name();
+
+    boolean evaluate(RequestContext context, PredicateArguments arguments);
 }

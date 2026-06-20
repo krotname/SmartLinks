@@ -2,6 +2,7 @@ package name.krot.smartlinks.predicate;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,37 +18,34 @@ class LanguagePredicateTest {
 
     @Test
     void testLanguageMatches() {
-        RequestContext context = new RequestContext();
-        context.setAcceptLanguage("ru-RU");
+        RequestContext context = new RequestContext(LocalDateTime.now(), "ru-RU", null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("language", Arrays.asList("ru", "ru-RU"));
 
-        boolean result = languagePredicate.evaluate(context, args);
+        boolean result = languagePredicate.evaluate(context, new PredicateArguments(args));
         assertTrue(result);
     }
 
     @Test
     void testLanguageDoesNotMatch() {
-        RequestContext context = new RequestContext();
-        context.setAcceptLanguage("en-US");
+        RequestContext context = new RequestContext(LocalDateTime.now(), "en-US", null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("language", Arrays.asList("ru", "ru-RU"));
 
-        boolean result = languagePredicate.evaluate(context, args);
+        boolean result = languagePredicate.evaluate(context, new PredicateArguments(args));
         assertFalse(result);
     }
 
     @Test
     void testLanguagePredicateWithEmptyLanguageList() {
-        RequestContext context = new RequestContext();
-        context.setAcceptLanguage("en-US");
+        RequestContext context = new RequestContext(LocalDateTime.now(), "en-US", null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("language", Collections.emptyList());
 
-        boolean result = languagePredicate.evaluate(context, args);
+        boolean result = languagePredicate.evaluate(context, new PredicateArguments(args));
         assertFalse(result);
     }
 }

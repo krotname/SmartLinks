@@ -47,7 +47,7 @@ class SmartLinkRepositoryDockerTest {
 
         smartLinkRepository.save(smartLink);
 
-        SmartLink result = smartLinkRepository.findById("smartlink123");
+        SmartLink result = smartLinkRepository.findById("smartlink123").orElse(null);
 
         assertNotNull(result);
         assertEquals("smartlink123", result.getId());
@@ -57,7 +57,7 @@ class SmartLinkRepositoryDockerTest {
     static class TestConfig {
         @Bean
         public SmartLinkRepository smartLinkRepository(RedisTemplate<String, Object> redisTemplate) {
-            return new SmartLinkRepository(redisTemplate);
+            return new RedisSmartLinkRepository(redisTemplate);
         }
 
         @Bean

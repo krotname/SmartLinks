@@ -17,54 +17,50 @@ class DateRangePredicateTest {
 
     @Test
     void testDateWithinRange() {
-        RequestContext context = new RequestContext();
-        context.setRequestTime(LocalDateTime.of(2024, 11, 15, 12, 0));
+        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), null, null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("startWith", "2024-11-01T00:00:00");
         args.put("endWith", "2024-12-01T00:00:00");
 
-        boolean result = dateRangePredicate.evaluate(context, args);
+        boolean result = dateRangePredicate.evaluate(context, new PredicateArguments(args));
         assertTrue(result);
     }
 
     @Test
     void testDateBeforeRange() {
-        RequestContext context = new RequestContext();
-        context.setRequestTime(LocalDateTime.of(2024, 10, 31, 23, 59));
+        RequestContext context = new RequestContext(LocalDateTime.of(2024, 10, 31, 23, 59), null, null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("startWith", "2024-11-01T00:00:00");
         args.put("endWith", "2024-12-01T00:00:00");
 
-        boolean result = dateRangePredicate.evaluate(context, args);
+        boolean result = dateRangePredicate.evaluate(context, new PredicateArguments(args));
         assertFalse(result);
     }
 
     @Test
     void testDateAfterRange() {
-        RequestContext context = new RequestContext();
-        context.setRequestTime(LocalDateTime.of(2024, 12, 1, 0, 1));
+        RequestContext context = new RequestContext(LocalDateTime.of(2024, 12, 1, 0, 1), null, null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("startWith", "2024-11-01T00:00:00");
         args.put("endWith", "2024-12-01T00:00:00");
 
-        boolean result = dateRangePredicate.evaluate(context, args);
+        boolean result = dateRangePredicate.evaluate(context, new PredicateArguments(args));
         assertFalse(result);
     }
 
     @Test
     void testDateRangePredicateWithInvalidArgs() {
-        RequestContext context = new RequestContext();
-        context.setRequestTime(LocalDateTime.now());
+        RequestContext context = new RequestContext(LocalDateTime.now(), null, null);
 
         Map<String, Object> args = new HashMap<>();
         args.put("startWith", "invalid date");
         args.put("endWith", "invalid date");
 
         assertThrows(DateTimeParseException.class, () -> {
-            dateRangePredicate.evaluate(context, args);
+            dateRangePredicate.evaluate(context, new PredicateArguments(args));
         });
     }
 }

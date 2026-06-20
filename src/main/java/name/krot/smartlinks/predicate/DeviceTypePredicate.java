@@ -1,26 +1,25 @@
 package name.krot.smartlinks.predicate;
 
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
 public class DeviceTypePredicate implements Predicate {
 
+    private final DeviceTypeResolver deviceTypeResolver;
+
     @Override
-    public boolean evaluate(RequestContext context, Map<String, Object> args) {
-        List<String> devices = (List<String>) args.get("devices");
-        String userAgent = context.getUserAgent();
-        String deviceType = getDeviceType(userAgent);
-        return devices.contains(deviceType);
+    public String name() {
+        return "DeviceType";
     }
 
-    private String getDeviceType(String userAgent) {
-        if (userAgent == null) {
-            return "Unknown";
-        }
-        if (userAgent.contains("Mobile") || userAgent.contains("iPhone") || userAgent.contains("Android")) {
-            return "Mobile";
-        } else {
-            return "Desktop";
-        }
+    @Override
+    public boolean evaluate(RequestContext context, PredicateArguments arguments) {
+        List<String> devices = arguments.getStringList("devices");
+        String deviceType = deviceTypeResolver.resolve(context.userAgent());
+        return devices.contains(deviceType);
     }
 }

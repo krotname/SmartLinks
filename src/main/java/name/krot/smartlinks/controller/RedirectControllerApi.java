@@ -62,5 +62,5 @@ public interface RedirectControllerApi {
     @Operation(
             summary = "Осуществить редирект",
             description = "Редирект")
-    ResponseEntity<?> redirect(@Valid @PathVariable String smartLinkId, HttpServletRequest request);
+    ResponseEntity<Void> redirect(@Valid @PathVariable String smartLinkId, HttpServletRequest request);
 }

@@ -2,7 +2,7 @@ package name.krot.smartlinks.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -10,6 +10,8 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,10 +19,10 @@ import java.util.Map;
 public class Rule implements Serializable {
     @Serial
     private static final long serialVersionUID = -4862926644813433701L;
-    @NotEmpty(message = "Predicates list cannot be empty")
-    private List<String> predicates;
+    @NotNull(message = "Predicates list cannot be null")
+    private List<@NotBlank(message = "Predicate name cannot be blank") String> predicates = new ArrayList<>();
     @NotNull(message = "Args cannot be null")
-    private Map<String, Object> args;
+    private Map<String, Object> args = new HashMap<>();
     @NotNull(message = "Redirect URL cannot be null")
     @Size(max = 2048, message = "Redirect URL cannot exceed 2048 characters")
     private String redirectTo;

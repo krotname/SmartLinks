@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 class SmartLinkServiceTest {
 
     @InjectMocks
-    private SmartLinkService smartLinkService;
+    private DefaultSmartLinkService smartLinkService;
 
     @Mock
     private SmartLinkRepository smartLinkRepository;
@@ -30,9 +30,9 @@ class SmartLinkServiceTest {
         SmartLink smartLink = new SmartLink();
         smartLink.setId("smartlink123");
 
-        when(smartLinkRepository.findById("smartlink123")).thenReturn(smartLink);
+        when(smartLinkRepository.findById("smartlink123")).thenReturn(java.util.Optional.of(smartLink));
 
-        SmartLink result = smartLinkService.getSmartLinkById("smartlink123");
+        SmartLink result = smartLinkService.findSmartLinkById("smartlink123").orElseThrow();
 
         assertNotNull(result);
         assertEquals("smartlink123", result.getId());
