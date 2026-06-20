@@ -2,17 +2,39 @@ package name.krot.smartlinks.predicate;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 @Component
 public class UserAgentDeviceTypeResolver implements DeviceTypeResolver {
 
+    private static final List<DeviceTypeRule> RULES = List.of(
+            new DeviceTypeRule(userAgent -> userAgent.filter(UserAgentDeviceTypeResolver::isMobile)
+                    .map(ignored -> "Mobile")),
+            new DeviceTypeRule(userAgent -> userAgent.filter(currentUserAgent -> !isMobile(currentUserAgent))
+                    .map(ignored -> "Desktop")),
+            new DeviceTypeRule(userAgent -> Optional.of("Unknown"))
+    );
+
     @Override
     public String resolve(String userAgent) {
-        if (userAgent == null) {
-            return "Unknown";
+        Optional<String> currentUserAgent = Optional.ofNullable(userAgent);
+        return RULES.stream()
+                .map(rule -> rule.resolve(currentUserAgent))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElse("Unknown");
+    }
+
+    private static boolean isMobile(String userAgent) {
+        return Stream.of("Mobile", "iPhone", "Android").anyMatch(userAgent::contains);
+    }
+
+    private record DeviceTypeRule(Function<Optional<String>, Optional<String>> resolver) {
+        private Optional<String> resolve(Optional<String> userAgent) {
+            return resolver.apply(userAgent);
         }
-        if (userAgent.contains("Mobile") || userAgent.contains("iPhone") || userAgent.contains("Android")) {
-            return "Mobile";
-        }
-        return "Desktop";
     }
 }

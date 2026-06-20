@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static java.util.function.Predicate.not;
 
 @Data
 public class Rule implements Serializable {
@@ -34,21 +37,37 @@ public class Rule implements Serializable {
     }
 
     public static boolean isValidRedirectUrl(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
+        return Optional.ofNullable(value)
+                .map(String::trim)
+                .filter(not(String::isBlank))
+                .flatMap(Rule::parseUri)
+                .filter(Rule::hasSupportedScheme)
+                .filter(Rule::hasHost)
+                .filter(Rule::hasNoUserInfo)
+                .isPresent();
+    }
+
+    private static Optional<URI> parseUri(String value) {
         try {
-            URI uri = URI.create(value.trim());
-            String scheme = uri.getScheme();
-            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
-                return false;
-            }
-            if (uri.getHost() == null || uri.getHost().isBlank()) {
-                return false;
-            }
-            return uri.getRawUserInfo() == null;
+            return Optional.of(URI.create(value));
         } catch (IllegalArgumentException exception) {
-            return false;
+            return Optional.empty();
         }
+    }
+
+    private static boolean hasSupportedScheme(URI uri) {
+        return Optional.ofNullable(uri.getScheme())
+                .filter(scheme -> scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))
+                .isPresent();
+    }
+
+    private static boolean hasHost(URI uri) {
+        return Optional.ofNullable(uri.getHost())
+                .filter(not(String::isBlank))
+                .isPresent();
+    }
+
+    private static boolean hasNoUserInfo(URI uri) {
+        return uri.getRawUserInfo() == null;
     }
 }
