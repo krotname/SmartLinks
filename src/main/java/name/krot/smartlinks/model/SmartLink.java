@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SmartLink implements Serializable {
     @Serial
@@ -26,4 +24,20 @@ public class SmartLink implements Serializable {
     @Valid
     @NotEmpty(message = "Rules list cannot be empty")
     private List<Rule> rules = new ArrayList<>();
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public List<Rule> getRules() {
+        return rules;
+    }
+
+    public void setRules(List<Rule> rules) {
+        this.rules = rules;
+    }
 }

@@ -1,6 +1,5 @@
 package name.krot.smartlinks.service;
 
-import lombok.RequiredArgsConstructor;
 import name.krot.smartlinks.command.RedirectCommandChain;
 import name.krot.smartlinks.command.RedirectCommandFactory;
 import name.krot.smartlinks.exception.NoMatchingRuleException;
@@ -12,12 +11,21 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 
 @Service
-@RequiredArgsConstructor
 public class RuleBasedRedirectResolver implements RedirectResolver {
 
     private final SmartLinkService smartLinkService;
     private final RedirectCommandFactory redirectCommandFactory;
     private final RedirectCommandChain redirectCommandChain;
+
+    public RuleBasedRedirectResolver(
+            SmartLinkService smartLinkService,
+            RedirectCommandFactory redirectCommandFactory,
+            RedirectCommandChain redirectCommandChain
+    ) {
+        this.smartLinkService = smartLinkService;
+        this.redirectCommandFactory = redirectCommandFactory;
+        this.redirectCommandChain = redirectCommandChain;
+    }
 
     @Override
     public URI resolveRedirect(String smartLinkId, RequestContext context) {

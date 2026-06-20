@@ -1,35 +1,30 @@
 plugins {
     java
     jacoco
-    id("org.springframework.boot") version "3.3.2"
-    id("io.spring.dependency-management") version "1.1.6"
+    id("org.springframework.boot") version "4.1.0"
 }
-val springCloudVersion by extra("2023.0.3")
 
 group = "name.krot"
 version = "0.0.1-SNAPSHOT"
 
+val springBootBom = "org.springframework.boot:spring-boot-dependencies:4.1.0"
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
 tasks.test {
-    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+    finalizedBy(tasks.jacocoTestReport)
 }
+
 tasks.jacocoTestReport {
-    dependsOn(tasks.test) // tests are required to run before generating the report
+    dependsOn(tasks.test)
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.15"
     reportsDirectory = layout.buildDirectory.dir("JacocoReportDir")
 }
 
@@ -42,44 +37,33 @@ tasks.jacocoTestReport {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation("commons-validator:commons-validator:1.9.0")
+    implementation(platform(springBootBom))
+    developmentOnly(platform(springBootBom))
+    testImplementation(platform(springBootBom))
+    testRuntimeOnly(platform(springBootBom))
+
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    implementation("com.google.guava:guava:33.3.0-jre")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
-    compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    annotationProcessor("org.projectlombok:lombok")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
-    testImplementation("org.testcontainers:testcontainers:2.0.5")
-    testImplementation("com.redis:testcontainers-redis:2.2.2")
-
-}
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
-    }
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-data-redis-test")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.5"))
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-configurations {
-    runtimeOnly {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
 }

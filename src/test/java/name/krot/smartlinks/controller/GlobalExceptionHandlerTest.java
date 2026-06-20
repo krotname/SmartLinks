@@ -18,7 +18,7 @@ class GlobalExceptionHandlerTest {
         SmartLinkNotFoundException ex = new SmartLinkNotFoundException("Smart Link not found");
         ResponseEntity<String> response = exceptionHandler.handleSmartLinkNotFoundException(ex);
 
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals("Smart Link not found", response.getBody());
     }
 
@@ -27,7 +27,7 @@ class GlobalExceptionHandlerTest {
         NoMatchingRuleException ex = new NoMatchingRuleException("No matching rule found");
         ResponseEntity<String> response = exceptionHandler.handleNoMatchingRuleException(ex);
 
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals("No matching rule found", response.getBody());
     }
 
@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
         IllegalArgumentException ex = new IllegalArgumentException("Invalid argument");
         ResponseEntity<String> response = exceptionHandler.handleIllegalArgumentException(ex);
 
-        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(400, response.getStatusCode().value());
         assertEquals("Invalid argument", response.getBody());
     }
 
@@ -45,7 +45,7 @@ class GlobalExceptionHandlerTest {
         ResourceNotFoundException ex = new ResourceNotFoundException("Resource not found");
         ResponseEntity<String> response = exceptionHandler.handleResourceNotFoundException(ex);
 
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(404, response.getStatusCode().value());
         assertEquals("Resource not found", response.getBody());
     }
 
@@ -54,7 +54,7 @@ class GlobalExceptionHandlerTest {
         UnsupportedOperationException ex = new UnsupportedOperationException("Operation not supported");
         ResponseEntity<String> response = exceptionHandler.handleUnsupportedOperationException(ex);
 
-        assertEquals(501, response.getStatusCodeValue());
+        assertEquals(501, response.getStatusCode().value());
         assertEquals("Operation not supported", response.getBody());
     }
 
@@ -63,7 +63,7 @@ class GlobalExceptionHandlerTest {
         Exception ex = new Exception("Internal Server Error");
         ResponseEntity<String> response = exceptionHandler.handleAllExceptions(ex);
 
-        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(500, response.getStatusCode().value());
         assertEquals("Internal Server Error", response.getBody());
     }
 
