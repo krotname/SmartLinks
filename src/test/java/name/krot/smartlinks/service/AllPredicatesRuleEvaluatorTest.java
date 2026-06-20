@@ -7,12 +7,12 @@ import name.krot.smartlinks.predicate.PredicateFactory;
 import name.krot.smartlinks.predicate.RequestContext;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.RU_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContext;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.rule;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,8 +28,8 @@ class AllPredicatesRuleEvaluatorTest {
 
     @Test
     void matchesWhenAllPredicatesMatch() {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), "ru-RU", null);
-        Rule rule = rule(Arrays.asList("DateRange", "Language"));
+        RequestContext context = requestContext("ru-RU");
+        Rule rule = ruleWithPredicates(Arrays.asList("DateRange", "Language"));
 
         when(predicateFactory.createPredicate("DateRange")).thenReturn(dateRangePredicate);
         when(predicateFactory.createPredicate("Language")).thenReturn(languagePredicate);
@@ -41,8 +41,8 @@ class AllPredicatesRuleEvaluatorTest {
 
     @Test
     void doesNotMatchWhenAnyPredicateFails() {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), "en-US", null);
-        Rule rule = rule(Arrays.asList("DateRange", "Language"));
+        RequestContext context = requestContext("en-US");
+        Rule rule = ruleWithPredicates(Arrays.asList("DateRange", "Language"));
 
         when(predicateFactory.createPredicate("DateRange")).thenReturn(dateRangePredicate);
         when(predicateFactory.createPredicate("Language")).thenReturn(languagePredicate);
@@ -54,21 +54,12 @@ class AllPredicatesRuleEvaluatorTest {
 
     @Test
     void matchesFallbackRuleWithoutPredicates() {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), "en-US", null);
+        RequestContext context = requestContext("en-US");
 
-        assertTrue(evaluator.matches(rule(List.of()), context));
+        assertTrue(evaluator.matches(ruleWithPredicates(List.of()), context));
     }
 
-    private static Rule rule(List<String> predicates) {
-        Map<String, Object> args = new HashMap<>();
-        args.put("startWith", "2024-11-01T00:00:00");
-        args.put("endWith", "2024-12-01T00:00:00");
-        args.put("language", Arrays.asList("ru", "ru-RU"));
-
-        Rule rule = new Rule();
-        rule.setPredicates(predicates);
-        rule.setArgs(args);
-        rule.setRedirectTo("https://otus.ru/ru");
-        return rule;
+    private static Rule ruleWithPredicates(List<String> predicates) {
+        return rule(predicates, RU_REDIRECT_URL);
     }
 }

@@ -7,10 +7,12 @@ import name.krot.smartlinks.service.RedirectUriResolver;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.RU_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContext;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.rule;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -23,9 +25,9 @@ class RuleRedirectCommandTest {
 
     @Test
     void returnsRedirectWhenRuleMatches() {
-        Rule rule = rule();
-        RequestContext context = new RequestContext(LocalDateTime.now(), "ru-RU", null);
-        URI redirectUri = URI.create("https://otus.ru/ru");
+        Rule rule = languageRule();
+        RequestContext context = requestContext("ru-RU");
+        URI redirectUri = URI.create(RU_REDIRECT_URL);
         RuleRedirectCommand command = new RuleRedirectCommand(rule, predicateRuleEvaluator, redirectUriResolver);
 
         when(predicateRuleEvaluator.matches(rule, context)).thenReturn(true);
@@ -39,8 +41,8 @@ class RuleRedirectCommandTest {
 
     @Test
     void returnsEmptyWhenRuleDoesNotMatch() {
-        Rule rule = rule();
-        RequestContext context = new RequestContext(LocalDateTime.now(), "en-US", null);
+        Rule rule = languageRule();
+        RequestContext context = requestContext("en-US");
         RuleRedirectCommand command = new RuleRedirectCommand(rule, predicateRuleEvaluator, redirectUriResolver);
 
         when(predicateRuleEvaluator.matches(rule, context)).thenReturn(false);
@@ -48,10 +50,7 @@ class RuleRedirectCommandTest {
         assertTrue(command.execute(context).isEmpty());
     }
 
-    private static Rule rule() {
-        Rule rule = new Rule();
-        rule.setPredicates(List.of("Language"));
-        rule.setRedirectTo("https://otus.ru/ru");
-        return rule;
+    private static Rule languageRule() {
+        return rule(List.of("Language"), RU_REDIRECT_URL);
     }
 }

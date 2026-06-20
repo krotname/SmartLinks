@@ -15,9 +15,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static name.krot.smartlinks.support.SmartLinkJsonFixtures.fallbackSmartLinkJson;
+import static name.krot.smartlinks.support.SmartLinkJsonFixtures.invalidRedirectSmartLinkJson;
+import static name.krot.smartlinks.support.SmartLinkJsonFixtures.validSmartLinkJson;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.RU_REDIRECT_URL;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.SMART_LINK_ID;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContext;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,24 +50,24 @@ class RedirectControllerTest {
 
     @Test
     void testRedirectWithMatchingRule() throws Exception {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), "ru-RU", null);
+        RequestContext context = requestContext("ru-RU");
         when(requestContextFactory.from(any())).thenReturn(context);
-        when(redirectResolver.resolveRedirect("smartlink123", context)).thenReturn(URI.create("https://otus.ru/ru"));
+        when(redirectResolver.resolveRedirect(SMART_LINK_ID, context)).thenReturn(URI.create(RU_REDIRECT_URL));
 
-        mockMvc.perform(get("/s/smartlink123")
+        mockMvc.perform(get("/s/{smartLinkId}", SMART_LINK_ID)
                         .header("Accept-Language", "ru-RU"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", "https://otus.ru/ru"));
+                .andExpect(header().string("Location", RU_REDIRECT_URL));
     }
 
     @Test
     void testRedirectWithNoMatchingRule() throws Exception {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), "en-US", null);
+        RequestContext context = requestContext("en-US");
         when(requestContextFactory.from(any())).thenReturn(context);
-        when(redirectResolver.resolveRedirect("smartlink123", context))
+        when(redirectResolver.resolveRedirect(SMART_LINK_ID, context))
                 .thenThrow(new NoMatchingRuleException("No matching rule found for this Smart Link"));
 
-        mockMvc.perform(get("/s/smartlink123")
+        mockMvc.perform(get("/s/{smartLinkId}", SMART_LINK_ID)
                         .header("Accept-Language", "en-US"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("No matching rule found for this Smart Link"));
@@ -70,7 +75,7 @@ class RedirectControllerTest {
 
     @Test
     void testRedirectWithNonExistentSmartLink() throws Exception {
-        RequestContext context = new RequestContext(LocalDateTime.of(2024, 11, 15, 12, 0), null, null);
+        RequestContext context = requestContext(null);
         when(requestContextFactory.from(any())).thenReturn(context);
         when(redirectResolver.resolveRedirect("nonexistent", context))
                 .thenThrow(new SmartLinkNotFoundException("Smart Link not found"));
@@ -82,24 +87,9 @@ class RedirectControllerTest {
 
     @Test
     void testCreateSmartLink() throws Exception {
-        String smartLinkJson = "{\n" +
-                "  \"id\": \"smartlink123\",\n" +
-                "  \"rules\": [\n" +
-                "    {\n" +
-                "      \"predicates\": [\"DateRange\", \"Language\"],\n" +
-                "      \"args\": {\n" +
-                "        \"startWith\": \"2024-11-01T00:00:00\",\n" +
-                "        \"endWith\": \"2024-12-01T00:00:00\",\n" +
-                "        \"language\": [\"ru\", \"ru-RU\"]\n" +
-                "      },\n" +
-                "      \"redirectTo\": \"https://otus.ru/ru\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-
         mockMvc.perform(post("/api/smartlinks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(smartLinkJson))
+                        .content(validSmartLinkJson()))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("Smart Link created successfully"));
 
@@ -107,47 +97,23 @@ class RedirectControllerTest {
         verify(smartLinkService, times(1)).saveSmartLink(smartLinkCaptor.capture());
 
         SmartLink capturedSmartLink = smartLinkCaptor.getValue();
-        assertEquals("smartlink123", capturedSmartLink.getId());
+        assertEquals(SMART_LINK_ID, capturedSmartLink.getId());
         assertEquals(1, capturedSmartLink.getRules().size());
     }
 
     @Test
     void testCreateSmartLinkAcceptsFallbackRule() throws Exception {
-        String smartLinkJson = "{\n" +
-                "  \"id\": \"smartlink123\",\n" +
-                "  \"rules\": [\n" +
-                "    {\n" +
-                "      \"predicates\": [],\n" +
-                "      \"args\": {},\n" +
-                "      \"redirectTo\": \"https://otus.ru/default\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-
         mockMvc.perform(post("/api/smartlinks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(smartLinkJson))
+                        .content(fallbackSmartLinkJson()))
                 .andExpect(status().isCreated());
     }
 
     @Test
     void testCreateSmartLinkRejectsRedirectWithoutHost() throws Exception {
-        String smartLinkJson = "{\n" +
-                "  \"id\": \"smartlink123\",\n" +
-                "  \"rules\": [\n" +
-                "    {\n" +
-                "      \"predicates\": [\"Language\"],\n" +
-                "      \"args\": {\n" +
-                "        \"language\": [\"ru\"]\n" +
-                "      },\n" +
-                "      \"redirectTo\": \"https:otus.ru/no-host\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-
         mockMvc.perform(post("/api/smartlinks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(smartLinkJson))
+                        .content(invalidRedirectSmartLinkJson()))
                 .andExpect(status().isBadRequest());
     }
 }

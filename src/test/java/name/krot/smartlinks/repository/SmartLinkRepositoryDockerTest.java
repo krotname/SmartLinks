@@ -15,7 +15,10 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.SMART_LINK_ID;
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.smartLink;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -24,33 +27,31 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Import(SmartLinkRepositoryDockerTest.TestConfig.class)
 class SmartLinkRepositoryDockerTest {
 
+    private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:7.0.5-alpine");
+
     @Container
-    static RedisContainer redisContainer = new RedisContainer("redis:7.0.5-alpine");
+    static RedisContainer redisContainer = new RedisContainer(REDIS_IMAGE);
 
     @Autowired
     private SmartLinkRepository smartLinkRepository;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.redis.host", redisContainer::getHost);
-        registry.add("spring.redis.port", redisContainer::getFirstMappedPort);
-        registry.add("spring.redis.password", () -> "password");
+        registry.add("spring.data.redis.host", redisContainer::getHost);
+        registry.add("spring.data.redis.port", redisContainer::getFirstMappedPort);
+        registry.add("spring.data.redis.password", () -> "password");
     }
 
     @Test
     void testSaveAndFindById() {
-        SmartLink smartLink = new SmartLink();
-        smartLink.setId("smartlink123");
+        SmartLink smartLink = smartLink();
 
         smartLinkRepository.save(smartLink);
 
-        SmartLink result = smartLinkRepository.findById("smartlink123").orElse(null);
+        SmartLink result = smartLinkRepository.findById(SMART_LINK_ID).orElse(null);
 
         assertNotNull(result);
-        assertEquals("smartlink123", result.getId());
+        assertEquals(SMART_LINK_ID, result.getId());
     }
 
     @TestConfiguration

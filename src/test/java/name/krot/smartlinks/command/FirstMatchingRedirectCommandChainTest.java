@@ -4,10 +4,10 @@ import name.krot.smartlinks.predicate.RequestContext;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContext;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,7 +17,7 @@ class FirstMatchingRedirectCommandChainTest {
 
     @Test
     void returnsFirstCommandResult() {
-        RequestContext context = new RequestContext(LocalDateTime.now(), "ru-RU", null);
+        RequestContext context = requestContext("ru-RU");
         URI redirectUri = URI.create("https://otus.ru/ru");
 
         Optional<URI> result = chain.execute(List.of(
@@ -32,7 +32,7 @@ class FirstMatchingRedirectCommandChainTest {
 
     @Test
     void returnsEmptyWhenNoCommandMatches() {
-        RequestContext context = new RequestContext(LocalDateTime.now(), "en-US", null);
+        RequestContext context = requestContext("en-US");
 
         assertTrue(chain.execute(List.of(ignored -> Optional.empty()), context).isEmpty());
     }
