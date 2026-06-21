@@ -2,6 +2,7 @@ plugins {
     java
     jacoco
     id("org.springframework.boot") version "4.1.0"
+    id("io.gatling.gradle") version "3.13.5"
 }
 
 group = "name.krot"
@@ -31,7 +32,8 @@ jacoco {
 tasks.jacocoTestReport {
     reports {
         xml.required = false
-        csv.required = false
+        csv.required = true
+        csv.outputLocation = layout.buildDirectory.file("JacocoReportDir/jacoco.csv")
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
 }
@@ -66,4 +68,35 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// Gatling run tasks — bypasses GatlingRunTask which uses removed Gradle 9 API (project.reportsDir)
+val gatlingResultsDir = layout.buildDirectory.dir("gatling-results")
+
+listOf("SmokeSim", "LoadSim", "StressSim", "SpikeSim").forEach { sim ->
+    tasks.register<JavaExec>("gatlingRun$sim") {
+        group = "gatling"
+        description = "Run Gatling simulation: $sim"
+        dependsOn("gatlingClasses")
+
+        classpath = sourceSets["gatling"].runtimeClasspath
+        mainClass.set("io.gatling.app.Gatling")
+
+        args(
+            "--simulation", "name.krot.smartlinks.load.$sim",
+            "--results-folder", gatlingResultsDir.get().asFile.absolutePath
+        )
+
+        systemProperties(
+            mapOf("baseUrl" to (System.getProperty("baseUrl") ?: "http://localhost:8090"))
+        )
+
+        jvmArgs(
+            "-Xms512m", "-Xmx2g", "-XX:+UseG1GC",
+            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+            "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED",
+            "--add-opens", "java.base/java.util=ALL-UNNAMED",
+            "--add-opens", "java.base/sun.util.calendar=ALL-UNNAMED"
+        )
+    }
 }
