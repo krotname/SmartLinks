@@ -1,4 +1,4 @@
-### Тест создания умной ссылки с правилами
+### Создание умной ссылки с правилами Language и DateRange
 
 POST http://localhost:8080/api/smartlinks
 Content-Type: application/json
@@ -30,72 +30,7 @@ Content-Type: application/json
   ]
 }
 
-### Тест получения умной ссылки
-
-GET http://localhost:8080/s/smartlink123456
-Accept: application/json
-
-### Тест редиректа с русским языком
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: ru-RU
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Тест редиректа с английским языком
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: en-US
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Тест редиректа с неподдерживаемым языком (должен сработать дефолтное правило)
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: es-ES
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Тест редиректа по несуществующей умной ссылке
-
-GET http://localhost:8080/s/nonexistent
-Accept-Language: en-US
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Тест 1: Существующая умная ссылка с срабатывающим правилом
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: ru-RU
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Существующая умная ссылка без срабатывающих правил
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: es-ES
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Несуществующая умная ссылка
-
-GET http://localhost:8080/s/nonexistent
-Accept-Language: en-US
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Существующая умная ссылка с устройством Mobile
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: en-US
-User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X)
-
-### Существующая умная ссылка с устройством Desktop
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: en-US
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Умная ссылка с дефолтным правилом
-
-GET http://localhost:8080/s/smartlink123
-Accept-Language: fr-FR
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
-
-### Тест создания умной ссылки с DeviceTypePredicate
+### Создание умной ссылки с правилом DeviceType
 
 POST http://localhost:8080/api/smartlinks
 Content-Type: application/json
@@ -117,5 +52,47 @@ Content-Type: application/json
     }
   ]
 }
+
+### Редирект: русский язык → /ru
+
+GET http://localhost:8080/s/smartlink123456
+Accept-Language: ru-RU
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Редирект: английский язык → /en
+
+GET http://localhost:8080/s/smartlink123456
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Редирект: неподдерживаемый язык → /default (fallback)
+
+GET http://localhost:8080/s/smartlink123456
+Accept-Language: es-ES
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Редирект: французский язык → /default (fallback)
+
+GET http://localhost:8080/s/smartlink123456
+Accept-Language: fr-FR
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Редирект: мобильное устройство → m.otus.ru
+
+GET http://localhost:8080/s/smartlinkDevice
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 13_5_1 like Mac OS X)
+
+### Редирект: десктоп → otus.ru (fallback)
+
+GET http://localhost:8080/s/smartlinkDevice
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Несуществующая умная ссылка → 404
+
+GET http://localhost:8080/s/nonexistent
+Accept-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 ###

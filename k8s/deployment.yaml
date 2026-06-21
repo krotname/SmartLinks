@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: smart-links-container
-          image: your-dockerhub-username/smart-links-name:latest
+          image: ghcr.io/krotname/smart-links:latest
           ports:
             - containerPort: 8080
           env:

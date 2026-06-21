@@ -34,5 +34,5 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - name: Build with Gradle Wrapper
+      - name: Generate JaCoCo Report
         run: ./gradlew jacocoTestReport
