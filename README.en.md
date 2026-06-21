@@ -133,6 +133,31 @@ p99 exceeds 1 s at ≥ 150 users — Redis pipeline / JVM GC pressure. Below 100
 
 The system absorbed a 10× traffic burst with zero errors. Assertions passed: success rate > 99 %, p99 < 1,000 ms.
 
+### BreakSim — Capacity Ceiling
+
+Step ramp 500 → 1,000 → 2,000 → 3,000 → 4,000 → 5,000 concurrent users (90 s per step).
+
+| Parameter | Value |
+|---|---|
+| Total requests | 690,009 |
+| Errors | first appear at ≥ 4,500 users |
+| Errors at 4,500 → 5,000 | 997 (0.14 %) |
+| Error type | HTTP 5xx, mean response 3.4 s (thread pool saturation) |
+| p50 (whole test) | 534 ms |
+| p95 (whole test) | 1,189 ms |
+| Throughput ceiling | ~2,100–2,300 req/s |
+
+**Findings:**
+
+| User range | Errors | p50 | p99 |
+|---|---|---|---|
+| ≤ 200 users | 0 | 36 ms | 1,115 ms |
+| 200 – 1,500 | 0 | 233 ms | 899 ms |
+| 1,500 – 4,000 | 0 | ~970 ms | ~3,700 ms |
+| 4,500 – 5,000 | **0.14 %** | 534 ms | 2,225 ms |
+
+The throughput ceiling is ~2,100 req/s. Above ~4,500 persistent connections the Tomcat thread pool saturates and requests start receiving 5xx responses. Below that threshold the accept queue absorbs all load without dropping a single request.
+
 ### Running the Tests
 
 ```powershell
@@ -145,6 +170,7 @@ docker compose -p smartlinks-lt -f docker-compose.loadtest.yml up -d
 .\gradlew.bat gatlingRunLoadSim
 .\gradlew.bat gatlingRunStressSim
 .\gradlew.bat gatlingRunSpikeSim
+.\gradlew.bat gatlingRunBreakSim
 ```
 
 HTML reports are saved to `build/gatling-results/`.

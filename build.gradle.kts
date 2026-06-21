@@ -73,7 +73,7 @@ tasks.withType<Test> {
 // Gatling run tasks — bypasses GatlingRunTask which uses removed Gradle 9 API (project.reportsDir)
 val gatlingResultsDir = layout.buildDirectory.dir("gatling-results")
 
-listOf("SmokeSim", "LoadSim", "StressSim", "SpikeSim").forEach { sim ->
+listOf("SmokeSim", "LoadSim", "StressSim", "SpikeSim", "BreakSim").forEach { sim ->
     tasks.register<JavaExec>("gatlingRun$sim") {
         group = "gatling"
         description = "Run Gatling simulation: $sim"
