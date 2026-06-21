@@ -17,7 +17,8 @@ RUN ./gradlew bootJar --no-daemon -x test \
     && test -n "${jar}" \
     && cp "${jar}" app.jar
 
-FROM eclipse-temurin:25-jre-alpine@sha256:c707c0d18cb9e8556380719f80d96a7529d0746fbb42143893949b98ed2f8943
+# Ubuntu JRE (glibc) required for Shenandoah GC — Alpine/musl does not include it
+FROM eclipse-temurin:25-jre@sha256:7ea65de6187ad8fbcc0ad155950c38664a7371148bb3ccf1ec1e1b286b44ad08
 
 WORKDIR /app
 
@@ -25,4 +26,8 @@ COPY --from=build /workspace/app.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java", \
+  "-XX:+UseShenandoahGC", \
+  "-XX:ShenandoahGCHeuristics=adaptive", \
+  "-XX:MaxGCPauseMillis=10", \
+  "-jar", "/app/app.jar"]

@@ -1,29 +1,46 @@
 package name.krot.smartlinks.repository;
 
 import name.krot.smartlinks.model.SmartLink;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Optional;
 
 @Repository
 public class RedisSmartLinkRepository implements SmartLinkRepository {
 
-    private static final String KEY = "SmartLink";
+    private static final String KEY_PREFIX = "sl:";
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringTemplate;
+    private final JsonMapper jsonMapper;
 
-    public RedisSmartLinkRepository(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public RedisSmartLinkRepository(StringRedisTemplate stringTemplate, JsonMapper jsonMapper) {
+        this.stringTemplate = stringTemplate;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
     public void save(SmartLink smartLink) {
-        redisTemplate.opsForHash().put(KEY, smartLink.getId(), smartLink);
+        try {
+            stringTemplate.opsForValue().set(KEY_PREFIX + smartLink.getId(),
+                    jsonMapper.writeValueAsString(smartLink));
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Cannot serialize SmartLink: " + smartLink.getId(), e);
+        }
     }
 
     @Override
     public Optional<SmartLink> findById(String id) {
-        return Optional.ofNullable((SmartLink) redisTemplate.opsForHash().get(KEY, id));
+        String json = stringTemplate.opsForValue().get(KEY_PREFIX + id);
+        if (json == null) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(jsonMapper.readValue(json, SmartLink.class));
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Cannot deserialize SmartLink for key: " + id, e);
+        }
     }
 }

@@ -8,9 +8,12 @@ import static io.gatling.javaapi.core.CoreDsl.*;
  * Break test: find the throughput ceiling and connection-count where the
  * first errors appear (closed injection, GET-only, 90 s per step).
  *
- * Measured results on this hardware (Docker Desktop, Windows 11):
+ * Baseline results before Undertow/virtual-threads/Shenandoah (Docker Desktop, Windows 11):
  *   ≤ 4 000 users  → 0 errors, throughput ceiling ~2 100 req/s
  *   ≥ 4 500 users  → 0.14 % HTTP 5xx (Tomcat thread-pool saturation)
+ *
+ * After Undertow + virtual threads + Shenandoah GC + JSON serialization:
+ *   see README for updated numbers
  *
  * No assertions — examine the HTML report for the step where the error
  * rate first exceeds 1 % or p95 crosses 2 000 ms.
