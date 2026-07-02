@@ -7,7 +7,11 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -26,23 +30,40 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
-      - name: Change wrapper permissions
-        run: chmod +x ./gradlew
-
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build jacocoTestReport
 
-      - name: Generate JaCoCo Report
-        run: ./gradlew jacocoTestReport
+      - name: Upload coverage report
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jacoco-csv
+          path: build/JacocoReportDir/jacoco.csv
+          if-no-files-found: error
+
+  badge:
+    name: Update coverage badge
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Download coverage report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: jacoco-csv
+          path: build/JacocoReportDir
 
       - name: Generate Coverage Badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: cicirello/jacoco-badge-generator@72266185b7ee48a6fd74eaf0238395cc8b14fef8 # v2.12.1
         with:
           jacoco-csv-file: build/JacocoReportDir/jacoco.csv
 
       - name: Commit coverage badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
