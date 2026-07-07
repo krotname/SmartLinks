@@ -1,0 +1,14 @@
+# Ubuntu JRE (glibc) required for Shenandoah GC; Alpine/musl does not include it.
+FROM eclipse-temurin:25-jre@sha256:7ea65de6187ad8fbcc0ad155950c38664a7371148bb3ccf1ec1e1b286b44ad08
+
+WORKDIR /app
+
+COPY app.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+  "-XX:+UseShenandoahGC", \
+  "-XX:ShenandoahGCHeuristics=adaptive", \
+  "-XX:MaxGCPauseMillis=10", \
+  "-jar", "/app/app.jar"]
