@@ -8,12 +8,28 @@ spring:
     redis:
       host: localhost
       port: 6379
+      connect-timeout: 2s
+      timeout: 2s
       lettuce:
         pool:
           enabled: true
           max-active: 16
           max-idle: 8
           min-idle: 2
+          max-wait: 2s
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+    read:
+      strict-duplicate-detection: true
+    factory:
+      constraints:
+        read:
+          max-nesting-depth: 32
+          max-document-length: 262144
+          max-token-count: 10000
+          max-string-length: 4096
+          max-name-length: 128
 springdoc:
   swagger-ui:
     config-url: /v3/api-docs/swagger-config
@@ -26,6 +42,15 @@ server:
     max-connections: 10000
     accept-count: 1000
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,redis
+        liveness:
+          include: livenessState
   endpoints:
     web:
       exposure:

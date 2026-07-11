@@ -6,6 +6,7 @@ import name.krot.smartlinks.model.SmartLink;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
@@ -18,7 +19,7 @@ public class RedisSmartLinkRepository implements SmartLinkRepository {
 
     private final StringRedisTemplate stringTemplate;
     private final JsonMapper jsonMapper;
-    private final Cache<String, SmartLink> localCache;
+    private final Cache<String, String> localCache;
 
     public RedisSmartLinkRepository(StringRedisTemplate stringTemplate, JsonMapper jsonMapper) {
         this.stringTemplate = stringTemplate;
@@ -30,32 +31,48 @@ public class RedisSmartLinkRepository implements SmartLinkRepository {
     }
 
     @Override
-    public void save(SmartLink smartLink) {
+    public boolean saveIfAbsent(SmartLink smartLink) {
         try {
-            stringTemplate.opsForValue().set(KEY_PREFIX + smartLink.getId(),
-                    jsonMapper.writeValueAsString(smartLink));
-            localCache.put(smartLink.getId(), smartLink);
+            String json = jsonMapper.writeValueAsString(smartLink);
+            boolean inserted = Boolean.TRUE.equals(stringTemplate.opsForValue()
+                    .setIfAbsent(KEY_PREFIX + smartLink.getId(), json));
+            if (inserted) {
+                localCache.put(smartLink.getId(), json);
+            }
+            return inserted;
         } catch (JacksonException e) {
-            throw new IllegalArgumentException("Cannot serialize SmartLink: " + smartLink.getId(), e);
+            throw new IllegalStateException("Cannot serialize SmartLink: " + smartLink.getId(), e);
         }
     }
 
     @Override
     public Optional<SmartLink> findById(String id) {
-        SmartLink cached = localCache.getIfPresent(id);
+        String cached = localCache.getIfPresent(id);
         if (cached != null) {
-            return Optional.of(cached);
+            return Optional.of(deserialize(id, cached));
         }
         String json = stringTemplate.opsForValue().get(KEY_PREFIX + id);
         if (json == null) {
             return Optional.empty();
         }
+        SmartLink smartLink = deserialize(id, json);
+        localCache.put(id, json);
+        return Optional.of(smartLink);
+    }
+
+    private SmartLink deserialize(String id, String json) {
         try {
-            SmartLink smartLink = jsonMapper.readValue(json, SmartLink.class);
-            localCache.put(id, smartLink);
-            return Optional.of(smartLink);
+            // Redis is a durable cross-version boundary. Ignore fields written by a newer
+            // application version so rolling deployments do not break older replicas.
+            SmartLink smartLink = jsonMapper.readerFor(SmartLink.class)
+                    .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .readValue(json);
+            if (!id.equals(smartLink.getId())) {
+                throw new IllegalStateException("Stored SmartLink id does not match Redis key: " + id);
+            }
+            return smartLink;
         } catch (JacksonException e) {
-            throw new IllegalArgumentException("Cannot deserialize SmartLink for key: " + id, e);
+            throw new IllegalStateException("Cannot deserialize SmartLink for key: " + id, e);
         }
     }
 }

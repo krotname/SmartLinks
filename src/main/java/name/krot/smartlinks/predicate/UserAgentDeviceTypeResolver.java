@@ -3,6 +3,7 @@ package name.krot.smartlinks.predicate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -20,7 +21,8 @@ public class UserAgentDeviceTypeResolver implements DeviceTypeResolver {
 
     @Override
     public String resolve(String userAgent) {
-        Optional<String> currentUserAgent = Optional.ofNullable(userAgent);
+        Optional<String> currentUserAgent = Optional.ofNullable(userAgent)
+                .filter(current -> !current.isBlank());
         return RULES.stream()
                 .map(rule -> rule.resolve(currentUserAgent))
                 .flatMap(Optional::stream)
@@ -29,7 +31,8 @@ public class UserAgentDeviceTypeResolver implements DeviceTypeResolver {
     }
 
     private static boolean isMobile(String userAgent) {
-        return Stream.of("Mobile", "iPhone", "Android").anyMatch(userAgent::contains);
+        String normalized = userAgent.toLowerCase(Locale.ROOT);
+        return Stream.of("mobile", "iphone", "ipad", "android").anyMatch(normalized::contains);
     }
 
     private record DeviceTypeRule(Function<Optional<String>, Optional<String>> resolver) {

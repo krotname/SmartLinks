@@ -20,6 +20,8 @@ public abstract class SmartLinksSimulation extends Simulation {
             System.getProperty("baseUrl", "http://localhost:8090");
 
     static final int LINK_POOL_SIZE = 50;
+    private static final String LINK_POOL_PREFIX = "load-lnk-" +
+            UUID.randomUUID().toString().replace("-", "");
 
     protected final HttpProtocolBuilder protocol = http
             .baseUrl(BASE_URL)
@@ -29,7 +31,7 @@ public abstract class SmartLinksSimulation extends Simulation {
 
     protected final FeederBuilder<Object> linkIdFeeder = listFeeder(
             IntStream.rangeClosed(1, LINK_POOL_SIZE)
-                    .mapToObj(i -> Map.<String, Object>of("linkId", String.format("load-lnk-%03d", i)))
+                    .mapToObj(i -> Map.<String, Object>of("linkId", linkId(i)))
                     .collect(Collectors.toList())
     ).random();
 
@@ -56,7 +58,7 @@ public abstract class SmartLinksSimulation extends Simulation {
     protected final ScenarioBuilder seedLinks = scenario("Seed SmartLinks")
             .exec(repeat(LINK_POOL_SIZE, "i").on(
                     exec(session ->
-                            session.set("seedId", String.format("load-lnk-%03d", session.getInt("i") + 1))
+                            session.set("seedId", linkId(session.getInt("i") + 1))
                     ).exec(http("POST seed link")
                             .post("/api/smartlinks")
                             .body(StringBody(session -> buildSeedJson(session.getString("seedId"))))
@@ -96,6 +98,10 @@ public abstract class SmartLinksSimulation extends Simulation {
                                     """.formatted(session.getString("newId"))))
                             .check(status().is(201)))
             );
+
+    private static String linkId(int index) {
+        return "%s-%03d".formatted(LINK_POOL_PREFIX, index);
+    }
 
     private static String buildSeedJson(String id) {
         return """

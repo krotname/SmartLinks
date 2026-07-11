@@ -15,8 +15,7 @@ import static io.gatling.javaapi.core.CoreDsl.*;
  *   Redirect users: 0 → 40  over 2 min, hold 5 min, drain 1 min
  *   Create  users: 0 → 10  over 2 min, hold 5 min, drain 1 min
  *
- * Seed (atOnceUsers 1) runs in parallel; completes in ~1 s — well before
- * the 2-min ramp reaches meaningful load.
+ * Seed (atOnceUsers 1) completes before the read/write populations start.
  *
  * Assertions: p95 < 100 ms (GET), p99 < 300 ms (GET), error rate < 1 %.
  *
@@ -26,18 +25,17 @@ public class LoadSim extends SmartLinksSimulation {
 
     {
         setUp(
-                seedLinks.injectOpen(atOnceUsers(1)),
-
-                redirectLoop.injectClosed(
-                        rampConcurrentUsers(0).to(40).during(Duration.ofMinutes(2)),
-                        constantConcurrentUsers(40).during(Duration.ofMinutes(5)),
-                        rampConcurrentUsers(40).to(0).during(Duration.ofMinutes(1))
-                ),
-
-                createLoop.injectClosed(
-                        rampConcurrentUsers(0).to(10).during(Duration.ofMinutes(2)),
-                        constantConcurrentUsers(10).during(Duration.ofMinutes(5)),
-                        rampConcurrentUsers(10).to(0).during(Duration.ofMinutes(1))
+                seedLinks.injectOpen(atOnceUsers(1)).andThen(
+                        redirectLoop.injectClosed(
+                                rampConcurrentUsers(0).to(40).during(Duration.ofMinutes(2)),
+                                constantConcurrentUsers(40).during(Duration.ofMinutes(5)),
+                                rampConcurrentUsers(40).to(0).during(Duration.ofMinutes(1))
+                        ),
+                        createLoop.injectClosed(
+                                rampConcurrentUsers(0).to(10).during(Duration.ofMinutes(2)),
+                                constantConcurrentUsers(10).during(Duration.ofMinutes(5)),
+                                rampConcurrentUsers(10).to(0).during(Duration.ofMinutes(1))
+                        )
                 )
         )
                 .protocols(protocol)

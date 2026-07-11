@@ -20,15 +20,20 @@ import static java.util.function.Predicate.not;
 public class Rule implements Serializable {
     @Serial
     private static final long serialVersionUID = -4862926644813433701L;
+    public static final int MAX_PREDICATES = 16;
+    public static final int MAX_ARGUMENTS = 16;
+    public static final int MAX_REDIRECT_LENGTH = 2048;
 
     @NotNull(message = "Predicates list cannot be null")
+    @Size(max = MAX_PREDICATES, message = "Predicates list cannot exceed 16 entries")
     private List<@NotBlank(message = "Predicate name cannot be blank") String> predicates = new ArrayList<>();
 
     @NotNull(message = "Args cannot be null")
+    @Size(max = MAX_ARGUMENTS, message = "Args cannot exceed 16 entries")
     private Map<String, Object> args = new HashMap<>();
 
     @NotNull(message = "Redirect URL cannot be null")
-    @Size(max = 2048, message = "Redirect URL cannot exceed 2048 characters")
+    @Size(max = MAX_REDIRECT_LENGTH, message = "Redirect URL cannot exceed 2048 characters")
     private String redirectTo;
 
     @JsonIgnore
@@ -39,6 +44,7 @@ public class Rule implements Serializable {
 
     public static boolean isValidRedirectUrl(String value) {
         return Optional.ofNullable(value)
+                .filter(current -> current.length() <= MAX_REDIRECT_LENGTH)
                 .map(String::trim)
                 .filter(not(String::isBlank))
                 .flatMap(Rule::parseUri)

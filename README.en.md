@@ -68,7 +68,7 @@ Version 2 applies four targeted optimizations; version 3 adds an L1 cache:
 | **Shenandoah GC** | `-XX:+UseShenandoahGC` in the Docker ENTRYPOINT (Ubuntu JRE — glibc is required for Shenandoah) |
 | **Redis JSON instead of JDK serialization** | `StringRedisTemplate` + `JsonMapper` (Jackson 3, `tools.jackson`) + individual `sl:<id>` keys instead of a single mega-hash |
 | **Lettuce connection pool** | `spring.data.redis.lettuce.pool.enabled=true`, 16 connections — virtual threads no longer serialize through a single Lettuce connection |
-| **Caffeine L1 cache** | `Cache<String, SmartLink>` in `RedisSmartLinkRepository` — 10,000 entries, `expireAfterAccess=10m`; `save()` writes to both levels atomically |
+| **Caffeine L1 cache** | `Cache<String, String>` stores immutable JSON instead of externally mutable objects; 10,000 entries, `expireAfterAccess=10m`. Creation uses atomic Redis `SETNX`, so concurrent requests cannot overwrite a write-once link |
 
 Spring Boot 4.1 does not publish `spring-boot-starter-undertow` — Undertow was removed from the distribution.
 Virtual threads with Tomcat 11 achieve equal or better results.
@@ -174,7 +174,7 @@ Previous result (before virtual threads): ≥ 4,500 users → 0.14 % HTTP 5xx (T
 
 **Redis JSON serialization + Lettuce pool** cut CPU and wire payload. JDK serialization replaced by `StringRedisTemplate` + `JsonMapper`, individual `sl:<id>` keys instead of a single hash. Combined with the pool (16 connections), eliminates serialization through a single connection under high concurrency.
 
-**Caffeine L1 cache** is the primary second-stage driver. SmartLinks are write-once, read-many: 50 hot keys fit in Caffeine and are populated on `save()` and on the first Redis miss. At 200 concurrent GET users, Redis saturation was the bottleneck; the cache removes it entirely — p99 drops from 881 ms to 174 ms (−80 %). In this Docker-local benchmark (Redis sibling container, ~1 ms RTT) the gain at moderate load is smaller (LoadSim GET p99: 79→66 ms, −17 %). In production, where Redis is a separate host (10–50 ms), the effect is proportionally larger.
+**Caffeine L1 cache** is the primary second-stage driver. SmartLinks are write-once, read-many: 50 hot keys fit in Caffeine and are populated after successful creation and on the first Redis miss. At 200 concurrent GET users, Redis saturation was the bottleneck; the cache removes it entirely — p99 drops from 881 ms to 174 ms (−80 %). In this Docker-local benchmark (Redis sibling container, ~1 ms RTT) the gain at moderate load is smaller (LoadSim GET p99: 79→66 ms, −17 %). In production, where Redis is a separate host (10–50 ms), the effect is proportionally larger.
 
 **SpikeSim p99** increased from 125 ms to 223 ms while maintaining zero errors. The cause is a side effect of optimization: faster per-request processing raises the virtual-user cycle rate, concentrating more Redis operations into the 10× spike window. Throughput still rose 11 %.
 

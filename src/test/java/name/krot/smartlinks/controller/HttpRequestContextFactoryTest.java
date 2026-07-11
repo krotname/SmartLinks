@@ -27,4 +27,17 @@ class HttpRequestContextFactoryTest {
         assertEquals("ru-RU", context.acceptLanguage());
         assertEquals("Mozilla/5.0", context.userAgent());
     }
+
+    @Test
+    void combinesRepeatedAcceptLanguageHeaders() {
+        Clock clock = Clock.fixed(Instant.parse("2024-11-15T12:00:00Z"), ZoneId.of("UTC"));
+        HttpRequestContextFactory factory = new HttpRequestContextFactory(clock);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "en-US;q=0.5");
+        request.addHeader("Accept-Language", "ru-RU;q=0.9");
+
+        RequestContext context = factory.from(request);
+
+        assertEquals("en-US;q=0.5,ru-RU;q=0.9", context.acceptLanguage());
+    }
 }

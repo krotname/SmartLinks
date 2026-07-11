@@ -3,7 +3,6 @@ package name.krot.smartlinks.predicate;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 
 import static name.krot.smartlinks.support.SmartLinksTestFixtures.dateRangeArguments;
 import static name.krot.smartlinks.support.SmartLinksTestFixtures.requestContextAt;
@@ -52,7 +51,7 @@ class DateRangePredicateTest {
     void testDateRangePredicateWithInvalidArgs() {
         RequestContext context = requestContextAt(LocalDateTime.now());
 
-        assertThrows(DateTimeParseException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             dateRangePredicate.evaluate(context, dateRangeArguments("invalid date", "invalid date"));
         });
     }

@@ -15,6 +15,8 @@ import static name.krot.smartlinks.support.SmartLinksTestFixtures.smartLink;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import name.krot.smartlinks.exception.SmartLinkAlreadyExistsException;
 
 @ExtendWith(MockitoExtension.class)
 class SmartLinkServiceTest {
@@ -24,6 +26,9 @@ class SmartLinkServiceTest {
 
     @Mock
     private SmartLinkRepository smartLinkRepository;
+
+    @Mock
+    private SmartLinkDefinitionValidator definitionValidator;
 
     @Test
     void testGetSmartLinkById() {
@@ -40,9 +45,20 @@ class SmartLinkServiceTest {
     @Test
     void testSaveSmartLink() {
         SmartLink smartLink = smartLink();
+        when(smartLinkRepository.saveIfAbsent(smartLink)).thenReturn(true);
 
         smartLinkService.saveSmartLink(smartLink);
 
-        verify(smartLinkRepository, times(1)).save(smartLink);
+        verify(definitionValidator).validate(smartLink);
+        verify(smartLinkRepository, times(1)).saveIfAbsent(smartLink);
+    }
+
+    @Test
+    void duplicateIdIsRejectedInsteadOfOverwritingExistingRedirects() {
+        SmartLink smartLink = smartLink();
+        when(smartLinkRepository.saveIfAbsent(smartLink)).thenReturn(false);
+
+        assertThrows(SmartLinkAlreadyExistsException.class,
+                () -> smartLinkService.saveSmartLink(smartLink));
     }
 }

@@ -56,4 +56,24 @@ class DeviceTypePredicateTest {
         boolean result = deviceTypePredicate.evaluate(context, deviceArguments(List.of("Mobile")));
         assertFalse(result);
     }
+
+    @Test
+    void blankUserAgentIsUnknownInsteadOfDesktop() {
+        assertTrue(deviceTypePredicate.evaluate(
+                requestContext(null, "   "),
+                deviceArguments(List.of("Unknown"))));
+        assertFalse(deviceTypePredicate.evaluate(
+                requestContext(null, ""),
+                deviceArguments(List.of("Desktop"))));
+    }
+
+    @Test
+    void mobileDetectionIsCaseInsensitiveAndRecognizesTablets() {
+        assertTrue(deviceTypePredicate.evaluate(
+                requestContext(null, "mozilla/5.0 (linux; android 14; mobile)"),
+                deviceArguments(List.of("Mobile"))));
+        assertTrue(deviceTypePredicate.evaluate(
+                requestContext(null, "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)"),
+                deviceArguments(List.of("Mobile"))));
+    }
 }

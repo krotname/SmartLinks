@@ -1,5 +1,7 @@
 package name.krot.smartlinks.predicate;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,7 +11,9 @@ public final class PredicateArguments {
     private final Map<String, Object> values;
 
     public PredicateArguments(Map<String, Object> values) {
-        this.values = values == null ? Map.of() : Map.copyOf(values);
+        this.values = values == null
+                ? Map.of()
+                : Collections.unmodifiableMap(new HashMap<>(values));
     }
 
     public String getString(String key) {

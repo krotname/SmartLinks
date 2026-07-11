@@ -27,26 +27,26 @@ public class BreakSim extends SmartLinksSimulation {
 
     {
         setUp(
-                seedLinks.injectOpen(atOnceUsers(1)),
+                seedLinks.injectOpen(atOnceUsers(1)).andThen(
+                        redirectLoop.injectClosed(
+                                rampConcurrentUsers(0).to(500).during(RAMP),
+                                constantConcurrentUsers(500).during(STEP),
 
-                redirectLoop.injectClosed(
-                        rampConcurrentUsers(0).to(500).during(RAMP),
-                        constantConcurrentUsers(500).during(STEP),
+                                rampConcurrentUsers(500).to(1000).during(RAMP),
+                                constantConcurrentUsers(1000).during(STEP),
 
-                        rampConcurrentUsers(500).to(1000).during(RAMP),
-                        constantConcurrentUsers(1000).during(STEP),
+                                rampConcurrentUsers(1000).to(2000).during(RAMP),
+                                constantConcurrentUsers(2000).during(STEP),
 
-                        rampConcurrentUsers(1000).to(2000).during(RAMP),
-                        constantConcurrentUsers(2000).during(STEP),
+                                rampConcurrentUsers(2000).to(3000).during(RAMP),
+                                constantConcurrentUsers(3000).during(STEP),
 
-                        rampConcurrentUsers(2000).to(3000).during(RAMP),
-                        constantConcurrentUsers(3000).during(STEP),
+                                rampConcurrentUsers(3000).to(4000).during(RAMP),
+                                constantConcurrentUsers(4000).during(STEP),
 
-                        rampConcurrentUsers(3000).to(4000).during(RAMP),
-                        constantConcurrentUsers(4000).during(STEP),
-
-                        rampConcurrentUsers(4000).to(5000).during(RAMP),
-                        constantConcurrentUsers(5000).during(STEP)
+                                rampConcurrentUsers(4000).to(5000).during(RAMP),
+                                constantConcurrentUsers(5000).during(STEP)
+                        )
                 )
         )
                 .protocols(protocol)

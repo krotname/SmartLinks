@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Component
 public class HttpRequestContextFactory implements RequestContextFactory {
@@ -20,8 +22,15 @@ public class HttpRequestContextFactory implements RequestContextFactory {
     public RequestContext from(HttpServletRequest request) {
         return new RequestContext(
                 LocalDateTime.ofInstant(clock.instant(), clock.getZone()),
-                request.getHeader("Accept-Language"),
+                combinedHeader(request, "Accept-Language"),
                 request.getHeader("User-Agent")
         );
+    }
+
+    private static String combinedHeader(HttpServletRequest request, String name) {
+        String value = Collections.list(request.getHeaders(name)).stream()
+                .filter(header -> header != null && !header.isBlank())
+                .collect(Collectors.joining(","));
+        return value.isEmpty() ? null : value;
     }
 }
