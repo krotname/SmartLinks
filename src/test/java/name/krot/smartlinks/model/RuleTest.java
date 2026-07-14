@@ -33,5 +33,7 @@ class RuleTest {
         assertFalse(Rule.isValidRedirectUrl("https:otus.ru/no-host"));
         assertFalse(Rule.isValidRedirectUrl("https://"));
         assertFalse(Rule.isValidRedirectUrl("https://trusted.example@evil.example/path"));
+        assertFalse(Rule.isValidRedirectUrl("https://example.com/" + "a".repeat(2049)));
+        assertFalse(Rule.isValidRedirectUrl(" " + "https://example.com/" + "a".repeat(2028) + " "));
     }
 }

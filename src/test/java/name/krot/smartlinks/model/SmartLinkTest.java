@@ -8,6 +8,7 @@ import static name.krot.smartlinks.support.SmartLinksTestFixtures.SMART_LINK_ID;
 import static name.krot.smartlinks.support.SmartLinksTestFixtures.fallbackRule;
 import static name.krot.smartlinks.support.SmartLinksTestFixtures.smartLink;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class SmartLinkTest {
 
@@ -18,5 +19,11 @@ class SmartLinkTest {
         assertEquals(SMART_LINK_ID, smartLink.getId());
         assertEquals(1, smartLink.getRules().size());
         assertEquals(RU_REDIRECT_URL, smartLink.getRules().get(0).getRedirectTo());
+    }
+
+    @Test
+    void dotSegmentsAreNotValidPublicIds() {
+        assertFalse(SmartLink.isValidId("."));
+        assertFalse(SmartLink.isValidId(".."));
     }
 }

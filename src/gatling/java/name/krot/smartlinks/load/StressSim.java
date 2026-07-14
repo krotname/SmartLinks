@@ -26,29 +26,29 @@ public class StressSim extends SmartLinksSimulation {
 
     {
         setUp(
-                seedLinks.injectOpen(atOnceUsers(1)),
+                seedLinks.injectOpen(atOnceUsers(1)).andThen(
+                        redirectLoop.injectClosed(
+                                rampConcurrentUsers(0).to(10).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(10).during(STEP),
 
-                redirectLoop.injectClosed(
-                        rampConcurrentUsers(0).to(10).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(10).during(STEP),
+                                rampConcurrentUsers(10).to(25).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(25).during(STEP),
 
-                        rampConcurrentUsers(10).to(25).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(25).during(STEP),
+                                rampConcurrentUsers(25).to(50).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(50).during(STEP),
 
-                        rampConcurrentUsers(25).to(50).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(50).during(STEP),
+                                rampConcurrentUsers(50).to(75).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(75).during(STEP),
 
-                        rampConcurrentUsers(50).to(75).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(75).during(STEP),
+                                rampConcurrentUsers(75).to(100).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(100).during(STEP),
 
-                        rampConcurrentUsers(75).to(100).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(100).during(STEP),
+                                rampConcurrentUsers(100).to(150).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(150).during(STEP),
 
-                        rampConcurrentUsers(100).to(150).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(150).during(STEP),
-
-                        rampConcurrentUsers(150).to(200).during(Duration.ofSeconds(5)),
-                        constantConcurrentUsers(200).during(STEP)
+                                rampConcurrentUsers(150).to(200).during(Duration.ofSeconds(5)),
+                                constantConcurrentUsers(200).during(STEP)
+                        )
                 )
         )
                 .protocols(protocol)

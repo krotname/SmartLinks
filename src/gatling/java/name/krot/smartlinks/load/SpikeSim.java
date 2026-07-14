@@ -23,20 +23,20 @@ public class SpikeSim extends SmartLinksSimulation {
 
     {
         setUp(
-                seedLinks.injectOpen(atOnceUsers(1)),
+                seedLinks.injectOpen(atOnceUsers(1)).andThen(
+                        redirectLoop.injectClosed(
+                                // baseline
+                                rampConcurrentUsers(0).to(10).during(Duration.ofSeconds(2)),
+                                constantConcurrentUsers(10).during(Duration.ofSeconds(60)),
 
-                redirectLoop.injectClosed(
-                        // baseline
-                        rampConcurrentUsers(0).to(10).during(Duration.ofSeconds(2)),
-                        constantConcurrentUsers(10).during(Duration.ofSeconds(60)),
+                                // spike — near-instantaneous ramp (10×)
+                                rampConcurrentUsers(10).to(100).during(Duration.ofSeconds(2)),
+                                constantConcurrentUsers(100).during(Duration.ofSeconds(120)),
 
-                        // spike — near-instantaneous ramp (10×)
-                        rampConcurrentUsers(10).to(100).during(Duration.ofSeconds(2)),
-                        constantConcurrentUsers(100).during(Duration.ofSeconds(120)),
-
-                        // recovery
-                        rampConcurrentUsers(100).to(10).during(Duration.ofSeconds(2)),
-                        constantConcurrentUsers(10).during(Duration.ofSeconds(90))
+                                // recovery
+                                rampConcurrentUsers(100).to(10).during(Duration.ofSeconds(2)),
+                                constantConcurrentUsers(10).during(Duration.ofSeconds(90))
+                        )
                 )
         )
                 .protocols(protocol)

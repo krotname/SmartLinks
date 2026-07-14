@@ -68,7 +68,7 @@ API документация доступна на `/swagger-ui/index.html` по
 | **Shenandoah GC** | `-XX:+UseShenandoahGC` в Docker ENTRYPOINT (Ubuntu JRE — glibc обязателен для Shenandoah) |
 | **Redis JSON вместо JDK serialization** | `StringRedisTemplate` + `JsonMapper` (Jackson 3, `tools.jackson`) + индивидуальные ключи `sl:<id>` вместо единого хэша |
 | **Lettuce connection pool** | `spring.data.redis.lettuce.pool.enabled=true`, 16 соединений — виртуальные потоки не блокируются на одном Lettuce-соединении |
-| **Caffeine L1-кэш** | `Cache<String, SmartLink>` в `RedisSmartLinkRepository` — 10 000 записей, `expireAfterAccess=10m`; `save()` записывает в оба уровня сразу |
+| **Caffeine L1-кэш** | `Cache<String, String>` хранит неизменяемый JSON, а не выдаваемые наружу mutable-объекты; 10 000 записей, `expireAfterAccess=10m`. Создание выполняется атомарным Redis `SETNX`, поэтому write-once ссылка не перезаписывается при гонке |
 
 Spring Boot 4.1 не публикует `spring-boot-starter-undertow` — Undertow убран из дистрибутива.
 Virtual threads с Tomcat 11 дают те же или лучшие результаты.
@@ -174,7 +174,7 @@ Caffeine устраняет Redis-сатурацию: при 200 пользов�
 
 **Redis JSON serialization + Lettuce pool** — снижение CPU и payload. JDK-сериализация заменена на `StringRedisTemplate` + `JsonMapper`, индивидуальные ключи `sl:<id>` вместо единого хэша. Совместно с пулом 16 соединений устраняет очередь через одно Lettuce-соединение при высоком параллелизме.
 
-**Caffeine L1-кэш** — главная оптимизация второго этапа. SmartLinks write-once, read-many: 50 горячих ключей помещаются в Caffeine при `save()` и при первом промахе Redis. При 200 конкурентных GET-пользователях Redis-сатурация была узким местом; кэш устраняет её полностью — p99 падает с 881 мс до 174 мс (−80 %). В Docker-локальном бенчмарке (Redis-контейнер ~1 мс RTT) Caffeine даёт более скромный результат на умеренной нагрузке (LoadSim GET p99: 79→66 мс, −17 %). В production, где Redis — отдельный хост (10–50 мс), эффект кратно выше.
+**Caffeine L1-кэш** — главная оптимизация второго этапа. SmartLinks write-once, read-many: 50 горячих ключей помещаются в Caffeine после успешного создания и при первом промахе Redis. При 200 конкурентных GET-пользователях Redis-сатурация была узким местом; кэш устраняет её полностью — p99 падает с 881 мс до 174 мс (−80 %). В Docker-локальном бенчмарке (Redis-контейнер ~1 мс RTT) Caffeine даёт более скромный результат на умеренной нагрузке (LoadSim GET p99: 79→66 мс, −17 %). В production, где Redis — отдельный хост (10–50 мс), эффект кратно выше.
 
 **SpikeSim p99** вырос с 125 мс до 223 мс при сохранении 0 ошибок. Причина — побочный эффект оптимизации: более быстрые запросы повышают частоту цикла виртуальных пользователей, что увеличивает нагрузку на Redis во время пика (10×). Throughput при этом вырос на 11 %.
 

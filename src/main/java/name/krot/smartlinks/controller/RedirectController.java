@@ -44,6 +44,9 @@ public class RedirectController implements RedirectControllerApi {
 
     @Override
     public ResponseEntity<Void> redirect(@Valid @PathVariable String smartLinkId, HttpServletRequest request) {
+        if (!SmartLink.isValidId(smartLinkId)) {
+            throw new IllegalArgumentException("Smart Link id contains unsupported characters or is too long");
+        }
         log.info("Received GET request, smartLinkId: {}, HttpServletRequest: {}", smartLinkId, request);
         URI redirectUri = redirectResolver.resolveRedirect(smartLinkId, requestContextFactory.from(request));
         return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();

@@ -6,9 +6,14 @@ services:
     container_name: redis
     image: redis:8.2-alpine@sha256:94589dc90eb8b7eb920f3a9a6d85657e73fd20db61410719500b9c5ba0548d9a
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
   app:
     build:
       context: .
@@ -26,4 +31,5 @@ services:
       - SPRING_DATA_REDIS_PORT=6379
     restart: always
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy

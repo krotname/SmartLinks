@@ -8,8 +8,7 @@ import static io.gatling.javaapi.core.CoreDsl.*;
  * Smoke test: sanity check at minimal load (5 concurrent users, ~70 s).
  *
  * Uses the closed injection model so behaviour stays consistent with the
- * other simulations.  Seed scenario runs in parallel and completes well
- * before the ramp reaches any real concurrency.
+ * other simulations. The seed scenario completes before redirect traffic starts.
  *
  * Assertions: zero errors, p95 < 500 ms.
  *
@@ -19,11 +18,11 @@ public class SmokeSim extends SmartLinksSimulation {
 
     {
         setUp(
-                seedLinks.injectOpen(atOnceUsers(1)),
-
-                redirectLoop.injectClosed(
-                        rampConcurrentUsers(0).to(5).during(Duration.ofSeconds(20)),
-                        constantConcurrentUsers(5).during(Duration.ofSeconds(50))
+                seedLinks.injectOpen(atOnceUsers(1)).andThen(
+                        redirectLoop.injectClosed(
+                                rampConcurrentUsers(0).to(5).during(Duration.ofSeconds(20)),
+                                constantConcurrentUsers(5).during(Duration.ofSeconds(50))
+                        )
                 )
         )
                 .protocols(protocol)

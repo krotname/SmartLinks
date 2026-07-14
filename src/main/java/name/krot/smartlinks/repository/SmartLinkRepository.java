@@ -5,7 +5,7 @@ import name.krot.smartlinks.model.SmartLink;
 import java.util.Optional;
 
 public interface SmartLinkRepository {
-    void save(SmartLink smartLink);
+    boolean saveIfAbsent(SmartLink smartLink);
 
     Optional<SmartLink> findById(String id);
 }

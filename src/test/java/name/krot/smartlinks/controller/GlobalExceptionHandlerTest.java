@@ -1,11 +1,14 @@
 package name.krot.smartlinks.controller;
 
-
 import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.ResourceNotFoundException;
 import name.krot.smartlinks.exception.SmartLinkNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -65,6 +68,26 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(500, response.getStatusCode().value());
         assertEquals("Internal Server Error", response.getBody());
+    }
+
+    @Test
+    void malformedRequestBodyIsAClientError() {
+        HttpMessageNotReadableException ex = new HttpMessageNotReadableException(
+                "broken json", new MockHttpInputMessage(new byte[0]));
+        ResponseEntity<String> response = exceptionHandler.handleHttpMessageNotReadableException(ex);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals("Malformed request body", response.getBody());
+    }
+
+    @Test
+    void storageFailureIsReportedAsRetryableServiceOutage() {
+        ResponseEntity<String> response = exceptionHandler.handleDataAccessException(
+                new DataAccessResourceFailureException("redis unavailable"));
+
+        assertEquals(503, response.getStatusCode().value());
+        assertEquals("1", response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER));
+        assertEquals("Storage temporarily unavailable", response.getBody());
     }
 
 }
