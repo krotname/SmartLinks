@@ -29,6 +29,9 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      # Shared key for POST /api/** (X-API-Key header); redirects stay public.
+      # Export SMARTLINKS_API_KEY before `docker compose up`, otherwise writes answer 401.
+      - SMARTLINKS_API_KEY=${SMARTLINKS_API_KEY:-}
     restart: always
     depends_on:
       redis:

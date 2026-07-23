@@ -1,3 +1,9 @@
+smartlinks:
+  # Shared key required on write requests (POST /api/**) via the X-API-Key header.
+  # Supply it through the SMARTLINKS_API_KEY environment variable — never commit a real key.
+  # Left blank the service still starts and keeps serving redirects, but every write is
+  # rejected with 401 (fail closed).
+  api-key: ${SMARTLINKS_API_KEY:}
 spring:
   application:
     name: SmartLinks

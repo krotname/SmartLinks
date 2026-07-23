@@ -1,7 +1,14 @@
+# Операции записи требуют заголовок X-API-Key со значением smartlinks.api-key
+# (переменная окружения SMARTLINKS_API_KEY). Подставьте сюда свой ключ — плейсхолдер
+# ниже намеренно нерабочий, реальные ключи в репозиторий не коммитим.
+# Редиректы GET /s/{id} остаются публичными и ключа не требуют.
+@apiKey = replace-with-your-api-key
+
 ### Создание умной ссылки с правилами Language и DateRange
 
 POST http://localhost:8080/api/smartlinks
 Content-Type: application/json
+X-API-Key: {{apiKey}}
 
 {
   "id": "smartlink123456",
@@ -34,6 +41,7 @@ Content-Type: application/json
 
 POST http://localhost:8080/api/smartlinks
 Content-Type: application/json
+X-API-Key: {{apiKey}}
 
 {
   "id": "smartlinkDevice",
@@ -94,5 +102,38 @@ User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 GET http://localhost:8080/s/nonexistent
 Accept-Language: en-US
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+### Создание без X-API-Key → 401
+
+POST http://localhost:8080/api/smartlinks
+Content-Type: application/json
+
+{
+  "id": "smartlinkUnauthorized",
+  "rules": [
+    {
+      "predicates": [],
+      "args": {},
+      "redirectTo": "https://otus.ru/default"
+    }
+  ]
+}
+
+### Создание с неверным X-API-Key → 401
+
+POST http://localhost:8080/api/smartlinks
+Content-Type: application/json
+X-API-Key: wrong-key
+
+{
+  "id": "smartlinkUnauthorized",
+  "rules": [
+    {
+      "predicates": [],
+      "args": {},
+      "redirectTo": "https://otus.ru/default"
+    }
+  ]
+}
 
 ###

@@ -89,8 +89,12 @@ listOf("SmokeSim", "LoadSim", "StressSim", "SpikeSim", "BreakSim").forEach { sim
             "--results-folder", gatlingResultsDir.get().asFile.absolutePath
         )
 
+        // apiKey is forwarded because POST /api/smartlinks now answers 401 without X-API-Key.
         systemProperties(
-            mapOf("baseUrl" to (System.getProperty("baseUrl") ?: "http://localhost:8090"))
+            mapOf(
+                "baseUrl" to (System.getProperty("baseUrl") ?: "http://localhost:8090"),
+                "apiKey" to (System.getProperty("apiKey") ?: System.getenv("SMARTLINKS_API_KEY") ?: "")
+            )
         )
 
         jvmArgs(
