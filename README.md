@@ -21,6 +21,43 @@ SmartLinks ценен не набором endpoint-ов, а тем, как ус�
 - `PredicateFactory` и отдельные `Predicate`-классы дают расширение через новые типы предикатов.
 - `SmartLinkRepository` изолирует Redis за портом репозитория.
 - `RedisConfig` остаётся тонким адаптером и не дублирует автоконфигурацию Spring Boot.
+- `ApiKeyAuthenticationFilter` закрывает запись общим API-ключом, не затрагивая публичные редиректы.
+
+## Безопасность
+
+Создание умной ссылки выпускает URL на доверенном домене, который ведёт куда угодно. Открытый endpoint записи — это готовый stored open redirect и обход любого allowlist редиректов, поэтому запись закрыта общим API-ключом.
+
+| Свойство | Поведение |
+|---|---|
+| Что закрыто | Изменяющие запросы (`POST`, `PUT`, `PATCH`, `DELETE`) на `/api/**` |
+| Что открыто | `GET /s/{id}`, `/actuator/**`, Swagger UI — редирект остаётся публичным по назначению |
+| Заголовок | `X-API-Key` |
+| Источник ключа | `smartlinks.api-key`, переменная окружения `SMARTLINKS_API_KEY` |
+| Сравнение | `MessageDigest.isEqual` — постоянное время, без утечки по таймингу |
+| Ключ не задан | **Fail closed**: приложение стартует и продолжает отдавать редиректы, но каждая запись получает 401 |
+| Ответ на отказ | 401 + `WWW-Authenticate`; отсутствующий и неверный ключ неотличимы для клиента |
+
+Ключ сравнивается по пути **внутри приложения**: `server.servlet.context-path` отрезается до проверки префикса `/api/`, иначе под нерутовым context path (`/redirector/api/smartlinks`) фильтр молча пропускал бы все записи. Тот же путь нормализуется так же, как это делает Spring MVC при роутинге (параметры пути `;`, повторные слэши, percent-encoding), чтобы префикс нельзя было обойти.
+
+```powershell
+# Сгенерировать и задать ключ
+$env:SMARTLINKS_API_KEY = [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Max 256 }))
+
+# Создание умной ссылки
+curl.exe -X POST http://localhost:8080/api/smartlinks `
+  -H "Content-Type: application/json" `
+  -H "X-API-Key: $env:SMARTLINKS_API_KEY" `
+  -d '{\"id\":\"demo\",\"rules\":[{\"predicates\":[],\"args\":{},\"redirectTo\":\"https://otus.ru/default\"}]}'
+
+# Редирект — без ключа
+curl.exe -i http://localhost:8080/s/demo
+```
+
+В Kubernetes ключ приходит из Secret `smart-links-api-key`:
+
+```powershell
+kubectl create secret generic smart-links-api-key --from-literal=api-key="<ключ>"
+```
 
 ## Инженерные правила
 
@@ -29,13 +66,14 @@ SmartLinks ценен не набором endpoint-ов, а тем, как ус�
 - Зависимости внедряются через явные конструкторы без Lombok.
 - Лишние библиотеки удалены: HTTP-клиент, cloud BOM, utility-библиотека, URL validator и отдельный Redis test adapter.
 - Spring Boot BOM подключён явно через Gradle platform.
-- Секреты не лежат в `application.yml`; локальный Redis запускается без пароля.
+- Секреты не лежат в `application.yml`; локальный Redis запускается без пароля, API-ключ приходит из `SMARTLINKS_API_KEY`.
 
 ## Тесты
 
 - Unit-тесты проверяют отдельные роли: predicates, services, command chain, resolver.
 - Web slice использует актуальный Boot 4 пакет `spring-boot-starter-webmvc-test`.
 - Redis integration test использует официальный `redis:8.2-alpine` через `GenericContainer`.
+- `ApiKeyAuthenticationFilterTest` покрывает отказ без ключа, с неверным ключом, публичность редиректа, fail closed при пустом ключе и нерутовый `context-path`.
 - Test fixtures вынесены в `src/test/java/.../support`, чтобы сценарии не дублировали сборку моделей.
 - JaCoCo запускается после `test` и формирует HTML-отчёт.
 
@@ -181,11 +219,14 @@ Caffeine устраняет Redis-сатурацию: при 200 пользов�
 ### Запуск тестов
 
 ```powershell
+# Ключ обязателен: сценарии делают POST /api/smartlinks и ждут 201
+$env:SMARTLINKS_API_KEY = "<ключ>"
+
 # Собрать образ и поднять окружение
 docker build -t smart-links:latest .
 docker compose -p smartlinks-lt -f docker-compose.loadtest.yml up -d
 
-# Запустить сценарии
+# Запустить сценарии (ключ подхватывается из SMARTLINKS_API_KEY, либо -DapiKey=...)
 .\gradlew.bat gatlingRunSmokeSim
 .\gradlew.bat gatlingRunLoadSim
 .\gradlew.bat gatlingRunStressSim

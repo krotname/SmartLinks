@@ -26,6 +26,16 @@ spec:
               value: "redis"
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"
+            # Shared key for POST /api/** (X-API-Key header). Redirects stay public.
+            # Create it before applying this manifest, e.g.:
+            #   kubectl create secret generic smart-links-api-key \
+            #     --from-literal=api-key="$(openssl rand -base64 32)"
+            # Without the secret the pod still serves redirects but rejects every write with 401.
+            - name: SMARTLINKS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smart-links-api-key
+                  key: api-key
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness

@@ -12,5 +12,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATA_REDIS_HOST=redis
+      # Required: the Gatling simulations POST to /api/smartlinks and expect 201.
+      # Export the same value for the gatlingRun* tasks.
+      - SMARTLINKS_API_KEY=${SMARTLINKS_API_KEY:?export SMARTLINKS_API_KEY before starting the load-test stack}
     depends_on:
       - redis

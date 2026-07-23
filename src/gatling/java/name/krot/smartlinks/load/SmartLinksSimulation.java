@@ -7,6 +7,7 @@ import io.gatling.javaapi.http.HttpProtocolBuilder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -18,6 +19,20 @@ public abstract class SmartLinksSimulation extends Simulation {
 
     protected static final String BASE_URL =
             System.getProperty("baseUrl", "http://localhost:8090");
+
+    /**
+     * Header and key for the guarded write endpoint. Without it every POST answers 401 and the
+     * simulations fail on their {@code status().is(201)} check.
+     *
+     * <p>Pass it as {@code -DapiKey=...} or export {@code SMARTLINKS_API_KEY} — it must match the
+     * {@code smartlinks.api-key} of the system under test.
+     */
+    protected static final String API_KEY_HEADER = "X-API-Key";
+
+    protected static final String API_KEY = Optional
+            .ofNullable(System.getProperty("apiKey"))
+            .or(() -> Optional.ofNullable(System.getenv("SMARTLINKS_API_KEY")))
+            .orElse("");
 
     static final int LINK_POOL_SIZE = 50;
     private static final String LINK_POOL_PREFIX = "load-lnk-" +
@@ -61,6 +76,7 @@ public abstract class SmartLinksSimulation extends Simulation {
                             session.set("seedId", linkId(session.getInt("i") + 1))
                     ).exec(http("POST seed link")
                             .post("/api/smartlinks")
+                            .header(API_KEY_HEADER, API_KEY)
                             .body(StringBody(session -> buildSeedJson(session.getString("seedId"))))
                             .check(status().is(201)))
             ));
@@ -92,6 +108,7 @@ public abstract class SmartLinksSimulation extends Simulation {
                                     UUID.randomUUID().toString().replace("-", "").substring(0, 12))
                     ).exec(http("POST /api/smartlinks")
                             .post("/api/smartlinks")
+                            .header(API_KEY_HEADER, API_KEY)
                             .body(StringBody(session ->
                                     """
                                     {"id":"%s","rules":[{"predicates":[],"args":{},"redirectTo":"https://example.com/fallback"}]}

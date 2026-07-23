@@ -14,6 +14,8 @@ import java.util.Map;
 public final class SmartLinksTestFixtures {
 
     public static final String SMART_LINK_ID = "smartlink123";
+    /** Test-only value for {@code smartlinks.api-key}; must stay a compile-time constant for annotations. */
+    public static final String API_KEY = "test-api-key";
     public static final String RU_REDIRECT_URL = "https://otus.ru/ru";
     public static final String DEFAULT_REDIRECT_URL = "https://otus.ru/default";
     public static final LocalDateTime REQUEST_TIME = LocalDateTime.of(2024, 11, 15, 12, 0);

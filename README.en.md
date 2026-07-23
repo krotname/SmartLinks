@@ -21,6 +21,43 @@ SmartLinks is presented as an engineering sample first: routing is split into sm
 - `PredicateFactory` and dedicated `Predicate` classes keep routing rules open for extension.
 - `SmartLinkRepository` keeps Redis behind a repository port.
 - `RedisConfig` is a thin adapter and leaves connection setup to Spring Boot auto-configuration.
+- `ApiKeyAuthenticationFilter` closes the write surface behind a shared API key without touching public redirects.
+
+## Security
+
+Creating a Smart Link mints a URL on a trusted domain that redirects anywhere. An open write endpoint is therefore a ready-made stored open redirect and a bypass for any redirect allowlist, so writes are closed behind a shared API key.
+
+| Property | Behaviour |
+|---|---|
+| Guarded | State-changing requests (`POST`, `PUT`, `PATCH`, `DELETE`) below `/api/**` |
+| Public | `GET /s/{id}`, `/actuator/**`, Swagger UI — the redirect is the product and stays open |
+| Header | `X-API-Key` |
+| Key source | `smartlinks.api-key`, environment variable `SMARTLINKS_API_KEY` |
+| Comparison | `MessageDigest.isEqual` — constant time, no timing oracle |
+| Key not set | **Fail closed**: the application boots and keeps serving redirects, but every write answers 401 |
+| Rejection | 401 plus `WWW-Authenticate`; a missing key and a wrong key are indistinguishable to the caller |
+
+Matching happens on the path **within the application**: `server.servlet.context-path` is stripped before the `/api/` prefix is compared, otherwise a non-root context path (`/redirector/api/smartlinks`) would make the guard silently pass every write. That same path is normalised the way Spring MVC normalises it while routing (`;` path parameters, repeated slashes, percent-encoding), so the prefix cannot be dodged.
+
+```bash
+# Generate and export a key
+export SMARTLINKS_API_KEY="$(openssl rand -base64 32)"
+
+# Create a Smart Link
+curl -X POST http://localhost:8080/api/smartlinks \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $SMARTLINKS_API_KEY" \
+  -d '{"id":"demo","rules":[{"predicates":[],"args":{},"redirectTo":"https://otus.ru/default"}]}'
+
+# Redirect — no key needed
+curl -i http://localhost:8080/s/demo
+```
+
+On Kubernetes the key comes from the `smart-links-api-key` Secret:
+
+```bash
+kubectl create secret generic smart-links-api-key --from-literal=api-key="$SMARTLINKS_API_KEY"
+```
 
 ## Engineering Rules
 
@@ -29,13 +66,14 @@ SmartLinks is presented as an engineering sample first: routing is split into sm
 - Dependencies are declared through explicit constructors with no Lombok.
 - Removed unused libraries: HTTP client, cloud BOM, utility library, URL validator, and a dedicated Redis test adapter.
 - Spring Boot dependency management is declared through an explicit Gradle platform.
-- Secrets are not stored in `application.yml`; local Redis runs without a default password.
+- Secrets are not stored in `application.yml`; local Redis runs without a default password and the API key comes from `SMARTLINKS_API_KEY`.
 
 ## Tests
 
 - Unit tests target single roles: predicates, services, command chain, resolver.
 - Web slice tests use the current Boot 4 `spring-boot-starter-webmvc-test` package.
 - Redis integration tests use the official `redis:8.2-alpine` image through `GenericContainer`.
+- `ApiKeyAuthenticationFilterTest` covers rejection without a key, rejection with a wrong key, the public redirect, fail-closed behaviour on a blank key, and a non-root `context-path`.
 - Shared test fixtures live under `src/test/java/.../support`.
 - JaCoCo runs after `test` and produces an HTML report.
 
@@ -181,11 +219,14 @@ Previous result (before virtual threads): ≥ 4,500 users → 0.14 % HTTP 5xx (T
 ### Running the Tests
 
 ```powershell
+# Required: the scenarios POST to /api/smartlinks and expect 201
+$env:SMARTLINKS_API_KEY = "<key>"
+
 # Build the image and start the environment
 docker build -t smart-links:latest .
 docker compose -p smartlinks-lt -f docker-compose.loadtest.yml up -d
 
-# Run the scenarios
+# Run the scenarios (the key is read from SMARTLINKS_API_KEY, or pass -DapiKey=...)
 .\gradlew.bat gatlingRunSmokeSim
 .\gradlew.bat gatlingRunLoadSim
 .\gradlew.bat gatlingRunStressSim
