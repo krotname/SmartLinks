@@ -1,6 +1,5 @@
 volumes:
   redis_data:
-  gradle_cache25:
 services:
   redis:
     container_name: redis
@@ -23,8 +22,8 @@ services:
     image: smart-links:latest
     ports:
       - "8080:8080"
-    volumes:
-      - gradle_cache25:/home/gradle/.gradle
+    # Тома с кешем Gradle тут не было смысла держать: сборка идёт внутри образа (BuildKit
+    # тома compose не видит), а в рантайме это JRE-слой без Gradle вообще.
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATA_REDIS_HOST=redis

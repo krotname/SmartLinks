@@ -1,0 +1,6 @@
+# Профиль dev (docker-compose.yml задаёт SPRING_PROFILES_ACTIVE=dev).
+# До его появления SPRING_PROFILES_ACTIVE не значил ничего: файлов профилей не было,
+# а отладочный уровень стоял в базовом application.yml и уезжал в прод.
+logging:
+  level:
+    name.krot.smartlinks: DEBUG

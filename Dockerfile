@@ -22,7 +22,12 @@ FROM eclipse-temurin:25-jre@sha256:7ea65de6187ad8fbcc0ad155950c38664a7371148bb3c
 
 WORKDIR /app
 
-COPY --from=build /workspace/app.jar app.jar
+# Сервис ничего не пишет на диск, поэтому root ему не нужен ни для чего.
+RUN useradd --system --uid 10001 --user-group --no-create-home --shell /usr/sbin/nologin app
+
+COPY --from=build --chown=app:app /workspace/app.jar app.jar
+
+USER app
 
 EXPOSE 8080
 

@@ -47,7 +47,10 @@ public class RedirectController implements RedirectControllerApi {
         if (!SmartLink.isValidId(smartLinkId)) {
             throw new IllegalArgumentException("Smart Link id contains unsupported characters or is too long");
         }
-        log.info("Received GET request, smartLinkId: {}, HttpServletRequest: {}", smartLinkId, request);
+        // Публичный редирект — горячий путь: строка на каждый запрос уходит в debug.
+        // Сам HttpServletRequest в лог не годится: toString у реализации Tomcat —
+        // это `RequestFacade@1f2a3b4`, полезного в нём ничего нет.
+        log.debug("Received GET request, smartLinkId: {}, query: {}", smartLinkId, request.getQueryString());
         URI redirectUri = redirectResolver.resolveRedirect(smartLinkId, requestContextFactory.from(request));
         return ResponseEntity.status(HttpStatus.FOUND).location(redirectUri).build();
     }
