@@ -64,6 +64,8 @@ management:
 logging:
   level:
     root: INFO
-    name.krot.smartlinks: DEBUG
+    # DEBUG включает профиль dev (docker-compose.yml): в k8s стоит SPRING_PROFILES_ACTIVE=prod,
+    # и отладочный уровень на публичном редиректе там не нужен.
+    name.krot.smartlinks: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -35,7 +35,10 @@ public class GlobalExceptionHandler {
                     ? fieldError.getField()
                     : objectErrorKey(error);
             String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+            // Одно поле легко нарушает два правила сразу (@NotBlank и @Pattern):
+            // put затирал первое сообщение вторым, и клиент видел только половину причины.
+            errors.merge(fieldName, errorMessage,
+                    (existing, added) -> existing.equals(added) ? existing : existing + "; " + added);
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }

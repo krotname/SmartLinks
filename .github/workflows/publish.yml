@@ -29,8 +29,10 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-      - name: Package application JAR
-        run: ./gradlew bootJar --no-daemon -x test
+      # Именно `build`, а не `bootJar -x test`: workflow идёт на тот же push, что и тесты,
+      # но независимо от него, поэтому с `-x test` в GHCR уезжал бы образ с красными тестами.
+      - name: Build and test application JAR
+        run: ./gradlew build --no-daemon
 
       - name: Prepare Docker context
         run: |

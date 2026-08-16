@@ -4,11 +4,17 @@ import name.krot.smartlinks.exception.NoMatchingRuleException;
 import name.krot.smartlinks.exception.ResourceNotFoundException;
 import name.krot.smartlinks.exception.SmartLinkNotFoundException;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.MethodParameter;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.http.MockHttpInputMessage;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -88,6 +94,27 @@ class GlobalExceptionHandlerTest {
         assertEquals(503, response.getStatusCode().value());
         assertEquals("1", response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER));
         assertEquals("Storage temporarily unavailable", response.getBody());
+    }
+
+    @Test
+    void allValidationMessagesOfOneFieldSurvive() throws NoSuchMethodException {
+        BeanPropertyBindingResult binding = new BeanPropertyBindingResult(new Object(), "smartLink");
+        binding.addError(new FieldError("smartLink", "id", "must not be blank"));
+        binding.addError(new FieldError("smartLink", "id", "must match the id pattern"));
+        MethodParameter parameter = new MethodParameter(
+                GlobalExceptionHandlerTest.class.getDeclaredMethod("validationSample", String.class), 0);
+
+        ResponseEntity<Map<String, String>> response = exceptionHandler.handleValidationExceptions(
+                new MethodArgumentNotValidException(parameter, binding));
+
+        assertEquals(400, response.getStatusCode().value());
+        // Раньше второе сообщение затирало первое, и клиент видел половину причины
+        assertEquals("must not be blank; must match the id pattern",
+                response.getBody().get("id"));
+    }
+
+    @SuppressWarnings("unused")
+    private void validationSample(String id) {
     }
 
 }
