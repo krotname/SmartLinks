@@ -6,7 +6,7 @@ const result = document.querySelector('#result');
 let csrf;
 
 async function loadCsrf() {
-  const response = await fetch('/manage/csrf', {cache: 'no-store'});
+  const response = await fetch('csrf', {cache: 'no-store'});
   if (!response.ok) throw new Error('Не удалось подготовить запрос. Обновите страницу.');
   csrf = await response.json();
 }
@@ -48,7 +48,7 @@ function definition() {
 }
 
 async function readSaved(id) {
-  const response = await fetch('/manage/api/smartlinks/' + encodeURIComponent(id), {cache: 'no-store'});
+  const response = await fetch('api/smartlinks/' + encodeURIComponent(id), {cache: 'no-store'});
   if (!response.ok) throw new Error('Не удалось проверить сохранённую ссылку. Проверьте вход и повторите чтение.');
   return response.json();
 }
@@ -61,7 +61,7 @@ form.addEventListener('submit', async event => {
   try {
     await loadCsrf();
     const link = definition();
-    const response = await fetch('/manage/api/smartlinks', {method: 'POST',
+    const response = await fetch('api/smartlinks', {method: 'POST',
       headers: {'Content-Type': 'application/json', [csrf.headerName]: csrf.token}, body: JSON.stringify(link)});
     if (response.status === 409) throw new Error('Этот код уже занят. Выберите другой код.');
     if (response.status === 401 || response.redirected) throw new Error('Сессия истекла. Войдите заново.');
@@ -95,8 +95,8 @@ document.querySelector('#copy').onclick = async () => {
 document.querySelector('#logout').onclick = async () => {
   try {
     await loadCsrf();
-    const response = await fetch('/manage/logout', {method: 'POST', headers: {[csrf.headerName]: csrf.token}});
+    const response = await fetch('logout', {method: 'POST', headers: {[csrf.headerName]: csrf.token}});
     if (!response.ok) throw new Error('Не удалось выйти.');
-    location.assign('/manage/login');
+    location.assign('login');
   } catch (error) { message.textContent = error.message; }
 };

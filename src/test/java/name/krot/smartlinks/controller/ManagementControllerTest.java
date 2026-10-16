@@ -77,4 +77,23 @@ class ManagementControllerTest {
                 .param("username", "owner").param("password", "test-password"))
                 .andExpect(redirectedUrl("/manage/"));
     }
+    @Test void contextPathPreservesApiAndPageAuthentication() throws Exception {
+        mvc.perform(post("https://links.n-0.ru/short/manage/api/smartlinks").contextPath("/short")
+                .secure(true).with(csrf()).contentType("application/json").content(fallbackSmartLinkJson()))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("https://links.n-0.ru/short/manage/").contextPath("/short").secure(true))
+                .andExpect(redirectedUrl("/short/manage/login"));
+        verifyNoInteractions(service);
+    }
+
+    @Test void contextPathCanonicalizesDirectoryForRelativeAssets() throws Exception {
+        mvc.perform(get("https://links.n-0.ru/short/manage").contextPath("/short").secure(true)
+                .with(user("owner").roles("OWNER")))
+                .andExpect(redirectedUrl("/short/manage/"));
+        mvc.perform(get("https://links.n-0.ru/short/manage/login").contextPath("/short").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"login\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("src=\"login.js\"")));
+    }
+
 }

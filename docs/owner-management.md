@@ -7,7 +7,9 @@
 Пустые значения закрывают вход. Пароль и API-ключ в браузер не передаются.
 За доверенным прокси задайте SERVER_FORWARD_HEADERS_STRATEGY=framework; прокси обязан
 перезаписывать Forwarded/X-Forwarded-* и ограничивать доступ к управлению точным поддоменом.
-TZ=Europe/Moscow задаёт часовой пояс DateRange, поля интерфейса используют локальное время МСК.
+DateRange использует Europe/Moscow независимо от часового пояса процесса; поля интерфейса — МСК.
+Сессии Spring Session хранятся в Redis с префиксом smartlinks:session и доступны всем репликам.
+Ссылки интерфейса относительные: поддерживается server.servlet.context-path.
 
 POST /manage/api/smartlinks возвращает 201 с id и url. GET /manage/api/smartlinks/{id}
 читает сохранённое определение. Обе операции вызывают существующий SmartLinkService.

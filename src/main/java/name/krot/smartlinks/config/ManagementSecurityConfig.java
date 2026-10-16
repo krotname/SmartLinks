@@ -49,8 +49,8 @@ public class ManagementSecurityConfig {
                         .failureUrl("/manage/login?error"))
                 .logout(logout -> logout.logoutUrl("/manage/logout").logoutSuccessUrl("/manage/login"))
                 .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
-                    if (request.getRequestURI().startsWith("/manage/api/")) response.sendError(401);
-                    else response.sendRedirect("/manage/login");
+                    if (request.getRequestURI().startsWith(request.getContextPath() + "/manage/api/")) response.sendError(401);
+                    else response.sendRedirect(request.getContextPath() + "/manage/login");
                 }))
                 .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives(
                         "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
