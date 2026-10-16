@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Управление ссылками · SmartLinks</title><link rel="stylesheet" href="/manage/style.css"><script src="/manage/app.js" defer></script></head>
+<body><main><header><h1>Управление ссылками</h1><button id="logout" type="button">Выйти</button></header>
+<p>Короткие ссылки на n-0.ru · SmartLinks 0.1.0</p>
+<form id="create">
+<label>Адрес назначения по умолчанию<input name="destination" type="url" placeholder="https://example.com/" required maxlength="4096"></label>
+<label>Короткий код<input name="code" required maxlength="128" pattern="[A-Za-z0-9._-]+" autocomplete="off" placeholder="my-link"></label>
+<button type="button" id="generate">Сгенерировать код</button>
+<p class="hint">Латинские буквы, цифры, точка, дефис и подчёркивание. Занятые коды нельзя перезаписать.</p>
+<details><summary>Умная ссылка: условия перехода</summary><p>Правила проверяются сверху вниз. Используется первое совпадение всех условий правила. Если совпадений нет — адрес по умолчанию. Все даты и время — МСК (UTC+03:00), включая обе границы.</p><div id="rules"></div><button type="button" id="add-rule">Добавить правило</button></details>
+<button id="save" type="submit">Создать ссылку</button></form>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="result" hidden><h2>Ссылка сохранена</h2><label>Короткая ссылка<input id="short-url" readonly></label><button id="copy" type="button">Скопировать</button></section>
+<p><a href="https://n-0.ru/">На сайт</a></p>
+</main>
+<template id="rule-template"><fieldset class="rule"><legend>Правило</legend>
+<label>Адрес для этого правила<input data-url type="url" required maxlength="4096" placeholder="https://example.com/mobile"></label>
+<label>Устройство<select data-device><option value="">Любое</option><option value="mobile">Телефон или планшет</option><option value="desktop">Компьютер</option><option value="unknown">Не определено</option></select></label>
+<label>Язык<input data-language placeholder="ru, en-US" maxlength="256"></label>
+<p class="hint">Один или несколько языковых тегов через запятую. Пустое поле — любой язык.</p>
+<label>Начало, МСК<input data-start type="datetime-local" step="1"></label>
+<label>Конец, МСК<input data-end type="datetime-local" step="1"></label>
+<div class="actions"><button type="button" data-up>Выше</button><button type="button" data-down>Ниже</button><button type="button" data-remove>Удалить правило</button></div>
+</fieldset></template></body></html>

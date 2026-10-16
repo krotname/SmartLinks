@@ -22,7 +22,7 @@ class SmartLinkDefinitionValidatorTest {
             new PredicateFactoryImpl(List.of(
                     new DateRangePredicate(),
                     new LanguagePredicate(),
-                    new DeviceTypePredicate(new UserAgentDeviceTypeResolver()))));
+                    new DeviceTypePredicate(new UserAgentDeviceTypeResolver()))), new ReservedSmartLinkIdPolicy(""));
 
     @Test
     void acceptsValidAndFallbackRules() {
