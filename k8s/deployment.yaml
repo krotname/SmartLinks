@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: smart-links-container
-          image: ghcr.io/krotname/smart-links:latest
+          # Replace with the verified release digest before applying to production.
+          image: ghcr.io/krotname/smart-links:0.2.0
           ports:
             - containerPort: 8080
           env:
@@ -26,11 +27,27 @@ spec:
               value: "redis"
             - name: SPRING_DATA_REDIS_PORT
               value: "6379"
+            - name: SERVER_FORWARD_HEADERS_STRATEGY
+              value: framework
+            - name: SMARTLINKS_OWNER_HOST
+              value: links.n-0.ru
+            - name: SMARTLINKS_PUBLIC_BASE_URL
+              value: https://n-0.ru
+            - name: SMARTLINKS_OWNER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smart-links-owner
+                  key: username
+            - name: SMARTLINKS_OWNER_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: smart-links-owner
+                  key: password-hash
             # Shared key for POST /api/** (X-API-Key header). Redirects stay public.
             # Create it before applying this manifest, e.g.:
             #   kubectl create secret generic smart-links-api-key \
             #     --from-literal=api-key="$(openssl rand -base64 32)"
-            # Without the secret the pod still serves redirects but rejects every write with 401.
+            # Missing required Kubernetes secrets prevent startup; empty values fail closed.
             - name: SMARTLINKS_API_KEY
               valueFrom:
                 secretKeyRef:

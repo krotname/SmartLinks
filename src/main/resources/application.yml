@@ -30,8 +30,9 @@ spring:
           min-idle: 2
           max-wait: 2s
   session:
-    redis:
-      namespace: smartlinks:session
+    data:
+      redis:
+        namespace: spring:session
   jackson:
     deserialization:
       fail-on-unknown-properties: true

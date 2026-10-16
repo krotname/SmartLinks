@@ -41,7 +41,7 @@ public class ManagementSecurityConfig {
         http.securityMatcher("/manage", "/manage/**")
                 .addFilterBefore(new ManagementOriginFilter(host), CsrfFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/manage/login", "/manage/csrf", "/manage/login.js", "/manage/style.css").permitAll()
+                        .requestMatchers("/manage/login", "/manage/csrf", "/manage/login.js", "/manage/i18n.mjs", "/manage/style.css").permitAll()
                         .anyRequest().hasRole("OWNER"))
                 .formLogin(form -> form.loginPage("/manage/login")
                         .loginProcessingUrl("/manage/login")

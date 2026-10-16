@@ -24,6 +24,11 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(name.krot.smartlinks.exception.SmartLinkVersionConflictException.class)
+    public ResponseEntity<String> handleVersionConflict(name.krot.smartlinks.exception.SmartLinkVersionConflictException ex) {
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(ex.getMessage());
+    }
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

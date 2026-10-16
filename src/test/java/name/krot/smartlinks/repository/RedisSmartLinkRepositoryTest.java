@@ -21,7 +21,7 @@ import tools.jackson.databind.DeserializationFeature;
 class RedisSmartLinkRepositoryTest {
 
     @Test
-    void cachedValuesCannotBeMutatedWithoutSaving() {
+    void readValuesCannotBeMutatedWithoutSaving() {
         StringRedisTemplate template = mock(StringRedisTemplate.class);
         @SuppressWarnings("unchecked")
         ValueOperations<String, String> values = mock(ValueOperations.class);
@@ -30,6 +30,7 @@ class RedisSmartLinkRepositoryTest {
         RedisSmartLinkRepository repository = new RedisSmartLinkRepository(
                 template, JsonMapper.builder().build());
         SmartLink original = smartLink(fallbackRule("https://example.com/original"));
+        when(values.get("sl:" + SMART_LINK_ID)).thenReturn(JsonMapper.builder().build().writeValueAsString(original));
 
         repository.saveIfAbsent(original);
         original.getRules().getFirst().setRedirectTo("https://example.com/mutated-after-save");

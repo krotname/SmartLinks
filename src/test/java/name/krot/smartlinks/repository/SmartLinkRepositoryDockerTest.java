@@ -54,6 +54,52 @@ class SmartLinkRepositoryDockerTest {
     @Autowired
     private JsonMapper jsonMapper;
 
+    @Test
+    void independentReplicasImmediatelyObserveEditsToLegacyDocuments() throws Exception {
+        String id = "edit-legacy";
+        SmartLink original = smartLink(fallbackRule("https://example.com/old"));
+        original.setId(id);
+        stringRedisTemplate.opsForValue().set("sl:" + id, jsonMapper.writeValueAsString(original));
+        var reader = new RedisSmartLinkRepository(stringRedisTemplate, jsonMapper);
+        var writer = new RedisSmartLinkRepository(stringRedisTemplate, jsonMapper);
+        assertEquals("https://example.com/old", reader.findById(id).orElseThrow().getRules().getFirst().getRedirectTo());
+        var before = writer.findVersionedById(id).orElseThrow();
+        assertEquals("0", before.version());
+        SmartLink replacement = smartLink(fallbackRule("https://example.com/new"));
+        replacement.setId(id);
+        var after = writer.replaceIfVersionMatches(replacement, before.version()).orElseThrow();
+        assertFalse(after.version().equals(before.version()));
+        assertEquals("https://example.com/new", reader.findById(id).orElseThrow().getRules().getFirst().getRedirectTo());
+        assertTrue(writer.replaceIfVersionMatches(original, before.version()).isEmpty());
+    }
+
+    @Test
+    void exactlyOneConcurrentWriterWins() throws Exception {
+        String id = "edit-race";
+        SmartLink original = smartLink(fallbackRule("https://example.com/original"));
+        original.setId(id);
+        assertTrue(smartLinkRepository.saveIfAbsent(original));
+        var first = new RedisSmartLinkRepository(stringRedisTemplate, jsonMapper);
+        var second = new RedisSmartLinkRepository(stringRedisTemplate, jsonMapper);
+        String version = first.findVersionedById(id).orElseThrow().version();
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var workers = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var a = workers.submit(() -> { start.await(); return first.replaceIfVersionMatches(original, version).isPresent(); });
+            var b = workers.submit(() -> { start.await(); return second.replaceIfVersionMatches(original, version).isPresent(); });
+            start.countDown();
+            assertTrue(a.get(10, java.util.concurrent.TimeUnit.SECONDS) ^ b.get(10, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    void conditionalWriteNeverCreatesMissingKeys() {
+        var repository = new RedisSmartLinkRepository(stringRedisTemplate, jsonMapper);
+        SmartLink missing = smartLink(fallbackRule("https://example.com/missing"));
+        missing.setId("edit-missing");
+        assertTrue(repository.replaceIfVersionMatches(missing, "0").isEmpty());
+        assertTrue(repository.findById("edit-missing").isEmpty());
+    }
+
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", redisContainer::getHost);

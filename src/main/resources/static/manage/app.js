@@ -1,22 +1,50 @@
-'use strict';
-const form = document.querySelector('#create');
-const rules = document.querySelector('#rules');
-const message = document.querySelector('#message');
-const result = document.querySelector('#result');
-let csrf;
+import {initLocale} from './i18n.mjs';
+import {fieldsToRule, splitDefinition, sameDefinition} from './definition.mjs';
 
-async function loadCsrf() {
-  const response = await fetch('csrf', {cache: 'no-store'});
-  if (!response.ok) throw new Error('Не удалось подготовить запрос. Обновите страницу.');
-  csrf = await response.json();
+const form = document.querySelector('#create'), rules = document.querySelector('#rules');
+const message = document.querySelector('#message'), result = document.querySelector('#result');
+let current = null, messageKey = '', busy = false;
+const originals = new WeakMap();
+const locale = initLocale(() => { message.textContent = messageKey ? locale.t(messageKey) : ''; });
+const show = key => { messageKey = key; message.textContent = key ? locale.t(key) : ''; };
+locale.apply();
+
+function setBusy(value) {
+  busy = value;
+  for (const control of document.querySelectorAll('button, input, select')) {
+    if (!control.hasAttribute('data-locale')) control.disabled = value;
+  }
+  document.querySelector('#generate').disabled = value || Boolean(current);
 }
-
-document.querySelector('#generate').addEventListener('click', () => {
-  form.elements.code.value = Array.from(crypto.getRandomValues(new Uint8Array(8)), n => n.toString(16).padStart(2, '0')).join('');
-});
-
-document.querySelector('#add-rule').addEventListener('click', () => {
+function mode(saved) {
+  current = saved;
+  form.elements.code.readOnly = Boolean(saved);
+  document.querySelector('#generate').disabled = Boolean(saved);
+  document.querySelector('#edit-hint').hidden = !saved;
+  document.querySelector('#save').dataset.i18n = saved ? 'saveEdit' : 'saveCreate';
+  locale.apply();
+}
+async function request(url, options = {}) {
+  const response = await fetch(url, {cache:'no-store', ...options});
+  const error = ({400:'invalid',401:'expired',403:'forbidden',404:'missing',409:'conflict',412:'stale',428:'stale'})[response.status];
+  if (response.redirected) throw new Error('expired');
+  if (!response.ok) throw new Error(error || 'failed');
+  return response;
+}
+async function csrfHeaders() {
+  const csrf = await (await request('csrf')).json();
+  return {'Content-Type':'application/json', [csrf.headerName]:csrf.token};
+}
+async function read(id) {
+  const response = await request('api/smartlinks/' + encodeURIComponent(id));
+  const definition = await response.json(), etag = response.headers.get('ETag');
+  if (!etag) throw new Error('failed');
+  return {definition, etag, url:response.headers.get('Content-Location')};
+}
+function appendRule(fields = {url:'',devices:'',language:'',start:'',end:''}, original) {
   const element = document.querySelector('#rule-template').content.cloneNode(true).firstElementChild;
+  for (const [key, value] of Object.entries(fields)) element.querySelector('[data-' + key + ']').value = value;
+  if (original) originals.set(element, original);
   element.querySelector('[data-remove]').onclick = () => element.remove();
   element.querySelector('[data-up]').onclick = () => {
     if (element.previousElementSibling) rules.insertBefore(element, element.previousElementSibling);
@@ -24,79 +52,69 @@ document.querySelector('#add-rule').addEventListener('click', () => {
   element.querySelector('[data-down]').onclick = () => {
     if (element.nextElementSibling) rules.insertBefore(element.nextElementSibling, element);
   };
-  rules.append(element);
-});
-
-// This serializes the existing API format. Validation and predicate evaluation stay on the server.
+  rules.append(element); locale.apply();
+}
 function definition() {
-  const entries = Array.from(rules.children, element => {
-    const predicates = [], args = {};
-    const value = selector => element.querySelector(selector).value.trim();
-    if (value('[data-device]')) {
-      predicates.push('DeviceType'); args.devices = [value('[data-device]')];
-    }
-    if (value('[data-language]')) {
-      predicates.push('Language'); args.language = value('[data-language]').split(',').map(tag => tag.trim());
-    }
-    if (value('[data-start]') || value('[data-end]')) {
-      predicates.push('DateRange'); args.startWith = value('[data-start]'); args.endWith = value('[data-end]');
-    }
-    return {predicates, args, redirectTo: value('[data-url]')};
-  });
-  entries.push({predicates: [], args: {}, redirectTo: form.elements.destination.value.trim()});
-  return {id: form.elements.code.value.trim(), rules: entries};
+  const entries = Array.from(rules.children, element => fieldsToRule(
+    Object.fromEntries(['url','devices','language','start','end'].map(key => [key,element.querySelector('[data-' + key + ']').value])),
+    originals.get(element)));
+  const fallback = current ? structuredClone(current.definition.rules.at(-1)) : {predicates:[],args:{}};
+  entries.push({...fallback, redirectTo:form.elements.destination.value.trim()});
+  return {id:form.elements.code.value.trim(), rules:entries};
 }
-
-async function readSaved(id) {
-  const response = await fetch('api/smartlinks/' + encodeURIComponent(id), {cache: 'no-store'});
-  if (!response.ok) throw new Error('Не удалось проверить сохранённую ссылку. Проверьте вход и повторите чтение.');
-  return response.json();
-}
-
-form.addEventListener('submit', async event => {
-  event.preventDefault();
-  result.hidden = true;
-  message.textContent = '';
-  document.querySelector('#save').disabled = true;
+document.querySelector('#lookup').addEventListener('submit', async event => {
+  event.preventDefault(); if (busy) return;
+  const code = event.currentTarget.elements.lookupCode.value.trim();
+  setBusy(true); show('');
   try {
-    await loadCsrf();
-    const link = definition();
-    const response = await fetch('api/smartlinks', {method: 'POST',
-      headers: {'Content-Type': 'application/json', [csrf.headerName]: csrf.token}, body: JSON.stringify(link)});
-    if (response.status === 409) throw new Error('Этот код уже занят. Выберите другой код.');
-    if (response.status === 401 || response.redirected) throw new Error('Сессия истекла. Войдите заново.');
-    if (response.status === 403) throw new Error('Защита запроса отклонила создание. Обновите страницу и войдите заново.');
-    if (!response.ok) throw new Error('Ссылка не создана: ' + await response.text());
-    const created = await response.json();
-    const saved = await readSaved(created.id);
-    if (saved.id !== link.id || JSON.stringify(saved.rules) !== JSON.stringify(link.rules)) {
-      // JSON object key order is not significant; compare the returned definition explicitly.
-      if (saved.id !== link.id || saved.rules.length !== link.rules.length || saved.rules.some((rule, i) =>
-        rule.redirectTo !== link.rules[i].redirectTo || JSON.stringify(rule.predicates) !== JSON.stringify(link.rules[i].predicates)
-        || Object.keys(rule.args).length !== Object.keys(link.rules[i].args).length
-        || Object.keys(rule.args).some(key => JSON.stringify(rule.args[key]) !== JSON.stringify(link.rules[i].args[key])))) {
-        throw new Error('Ссылка создана, но результат чтения отличается. Не повторяйте создание с тем же кодом.');
-      }
-    }
-    document.querySelector('#short-url').value = created.url;
-    result.hidden = false;
-    message.textContent = 'Создание и чтение подтверждены.';
-  } catch (error) {
-    message.textContent = error instanceof TypeError ? 'Ответ не получен. Код мог сохраниться; не повторяйте создание вслепую.' : error.message;
-  } finally {
-    document.querySelector('#save').disabled = false;
-  }
+    const saved = await read(code);
+    let parts; try { parts = splitDefinition(saved.definition); } catch { throw new Error('unsupported'); }
+    rules.replaceChildren();
+    for (const rule of parts.conditional) appendRule(rule.fields, rule.original);
+    form.elements.destination.value = parts.fallback.redirectTo;
+    form.elements.code.value = saved.definition.id;
+    document.querySelector('#advanced').open = parts.conditional.length > 0;
+    document.querySelector('#short-url').value = saved.url;
+    result.hidden = true; mode(saved); show('loaded');
+  } catch (error) { show(error instanceof TypeError ? 'failed' : error.message); }
+  finally { setBusy(false); }
 });
-
+document.querySelector('#new').onclick = () => {
+  if (busy) return;
+  form.reset(); rules.replaceChildren(); mode(null); result.hidden = true; show('');
+};
+document.querySelector('#generate').onclick = () => {
+  form.elements.code.value = Array.from(crypto.getRandomValues(new Uint8Array(8)), n => n.toString(16).padStart(2,'0')).join('');
+};
+document.querySelector('#add-rule').onclick = () => appendRule();
+form.addEventListener('submit', async event => {
+  event.preventDefault(); if (busy) return;
+  const link = definition(), editing = Boolean(current);
+  setBusy(true); result.hidden = true; show('');
+  let dispatched = false;
+  try {
+    const headers = await csrfHeaders();
+    if (editing) headers['If-Match'] = current.etag;
+    dispatched = true;
+    const response = await request('api/smartlinks' + (editing ? '/' + encodeURIComponent(link.id) : ''),
+      {method:editing ? 'PUT':'POST', headers, body:JSON.stringify(link)});
+    const write = await response.json(), saved = await read(link.id);
+    if (!sameDefinition(saved.definition,link) || (editing && saved.etag !== response.headers.get('ETag'))) throw new Error('mismatch');
+    if (!editing) document.querySelector('#short-url').value = write.url;
+    mode(saved); result.hidden = false; show(editing ? 'updated':'created');
+  } catch (error) { show(error instanceof TypeError ? (dispatched ? 'uncertain':'failed') : error.message); }
+  finally { setBusy(false); }
+});
 document.querySelector('#copy').onclick = async () => {
-  try { await navigator.clipboard.writeText(document.querySelector('#short-url').value); message.textContent = 'Ссылка скопирована.'; }
-  catch { document.querySelector('#short-url').select(); message.textContent = 'Выделенная ссылка готова для копирования вручную.'; }
+  try { await navigator.clipboard.writeText(document.querySelector('#short-url').value); show('copied'); }
+  catch { document.querySelector('#short-url').select(); show('manualCopy'); }
 };
 document.querySelector('#logout').onclick = async () => {
+  if (busy) return;
   try {
-    await loadCsrf();
-    const response = await fetch('logout', {method: 'POST', headers: {[csrf.headerName]: csrf.token}});
-    if (!response.ok) throw new Error('Не удалось выйти.');
+    const headers = await csrfHeaders();
+    const response = await fetch('logout', {method:'POST',headers});
+    if (!response.ok) throw new Error('failed');
     location.assign('login');
-  } catch (error) { message.textContent = error.message; }
+  } catch (error) { show(error instanceof TypeError ? 'failed' : error.message); }
 };
