@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 20
     env:
       GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx1g
+      DOCKER_BUILD_RECORD_UPLOAD: 'false'
       TESTCONTAINERS_RYUK_DISABLED: 'true'
 
     runs-on: arc-prod-adler-docker-smartlinks
