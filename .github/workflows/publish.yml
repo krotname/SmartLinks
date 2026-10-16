@@ -61,6 +61,15 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
+      - name: Set up Node for management contract tests
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Test management translations and definition round trips
+        run: node --test src/test/js/*.test.mjs
+
       # Именно `build`, а не `bootJar -x test`: workflow идёт на тот же push, что и тесты,
       # но независимо от него, поэтому с `-x test` в GHCR уезжал бы образ с красными тестами.
       - name: Build and test application JAR
