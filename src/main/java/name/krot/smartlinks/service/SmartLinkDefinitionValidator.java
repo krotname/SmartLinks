@@ -14,9 +14,11 @@ import org.springframework.stereotype.Component;
 public class SmartLinkDefinitionValidator {
 
     private final PredicateFactory predicateFactory;
+    private final SmartLinkIdPolicy idPolicy;
 
-    public SmartLinkDefinitionValidator(PredicateFactory predicateFactory) {
+    public SmartLinkDefinitionValidator(PredicateFactory predicateFactory, SmartLinkIdPolicy idPolicy) {
         this.predicateFactory = predicateFactory;
+        this.idPolicy = idPolicy;
     }
 
     public void validate(SmartLink smartLink) {
@@ -27,6 +29,7 @@ public class SmartLinkDefinitionValidator {
             throw new IllegalArgumentException("Smart Link id contains unsupported characters or is too long");
         }
         List<Rule> rules = smartLink.getRules();
+        idPolicy.validate(smartLink.getId());
         if (rules == null || rules.isEmpty()) {
             throw new IllegalArgumentException("Rules list cannot be empty");
         }

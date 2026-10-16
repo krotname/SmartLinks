@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Вход · SmartLinks</title><link rel="stylesheet" href="style.css"><script src="login.js" defer></script></head>
+<body><main><h1>Управление ссылками</h1><p>Вход для владельца · SmartLinks 0.1.0</p>
+<form action="login" method="post" id="login">
+<label>Логин<input name="username" autocomplete="username" required autofocus></label>
+<label>Пароль<input type="password" name="password" autocomplete="current-password" required></label>
+<input type="hidden" name="_csrf" id="csrf"><button id="submit" disabled>Войти</button>
+</form><p role="alert" id="message"></p><a href="https://n-0.ru/">На сайт</a></main></body></html>

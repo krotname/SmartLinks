@@ -41,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = RedirectController.class, properties = "smartlinks.api-key=" + API_KEY)
+@org.springframework.context.annotation.Import(name.krot.smartlinks.config.ManagementSecurityConfig.class)
 class RedirectControllerTest {
 
     @Autowired

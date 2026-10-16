@@ -4,6 +4,12 @@ smartlinks:
   # Left blank the service still starts and keeps serving redirects, but every write is
   # rejected with 401 (fail closed).
   api-key: ${SMARTLINKS_API_KEY:}
+  reserved-codes: ${SMARTLINKS_RESERVED_IDS:}
+  public-base-url: ${SMARTLINKS_PUBLIC_BASE_URL:https://n-0.ru}
+  owner:
+    host: ${SMARTLINKS_OWNER_HOST:links.n-0.ru}
+    username: ${SMARTLINKS_OWNER_USERNAME:}
+    password-hash: ${SMARTLINKS_OWNER_PASSWORD_HASH:}
 spring:
   application:
     name: SmartLinks
@@ -23,6 +29,9 @@ spring:
           max-idle: 8
           min-idle: 2
           max-wait: 2s
+  session:
+    redis:
+      namespace: smartlinks:session
   jackson:
     deserialization:
       fail-on-unknown-properties: true
@@ -44,6 +53,13 @@ springdoc:
     use-root-path: true
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
   tomcat:
     max-connections: 10000
     accept-count: 1000
