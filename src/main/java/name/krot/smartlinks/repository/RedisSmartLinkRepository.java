@@ -1,33 +1,37 @@
 package name.krot.smartlinks.repository;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import name.krot.smartlinks.model.SmartLink;
+import name.krot.smartlinks.model.VersionedSmartLink;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Repository;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public class RedisSmartLinkRepository implements SmartLinkRepository {
+public class RedisSmartLinkRepository implements SmartLinkRepository, ConditionalSmartLinkRepository {
 
     private static final String KEY_PREFIX = "sl:";
 
     private final StringRedisTemplate stringTemplate;
     private final JsonMapper jsonMapper;
-    private final Cache<String, String> localCache;
+    private static final DefaultRedisScript<Long> REPLACE = new DefaultRedisScript<>("""
+            local current = redis.call('GET', KEYS[1])
+            if not current then return 0 end
+            local version = cjson.decode(current)._revision or '0'
+            if version ~= ARGV[1] then return 0 end
+            redis.call('SET', KEYS[1], ARGV[2], 'KEEPTTL')
+            return 1
+            """, Long.class);
 
     public RedisSmartLinkRepository(StringRedisTemplate stringTemplate, JsonMapper jsonMapper) {
         this.stringTemplate = stringTemplate;
         this.jsonMapper = jsonMapper;
-        this.localCache = Caffeine.newBuilder()
-                .maximumSize(10_000)
-                .expireAfterAccess(Duration.ofMinutes(10))
-                .build();
     }
 
     @Override
@@ -36,9 +40,6 @@ public class RedisSmartLinkRepository implements SmartLinkRepository {
             String json = jsonMapper.writeValueAsString(smartLink);
             boolean inserted = Boolean.TRUE.equals(stringTemplate.opsForValue()
                     .setIfAbsent(KEY_PREFIX + smartLink.getId(), json));
-            if (inserted) {
-                localCache.put(smartLink.getId(), json);
-            }
             return inserted;
         } catch (JacksonException e) {
             throw new IllegalStateException("Cannot serialize SmartLink: " + smartLink.getId(), e);
@@ -47,17 +48,32 @@ public class RedisSmartLinkRepository implements SmartLinkRepository {
 
     @Override
     public Optional<SmartLink> findById(String id) {
-        String cached = localCache.getIfPresent(id);
-        if (cached != null) {
-            return Optional.of(deserialize(id, cached));
-        }
         String json = stringTemplate.opsForValue().get(KEY_PREFIX + id);
         if (json == null) {
             return Optional.empty();
         }
         SmartLink smartLink = deserialize(id, json);
-        localCache.put(id, json);
         return Optional.of(smartLink);
+    }
+
+    @Override
+    public Optional<VersionedSmartLink> findVersionedById(String id) {
+        String json = stringTemplate.opsForValue().get(KEY_PREFIX + id);
+        if (json == null) return Optional.empty();
+        SmartLink definition = deserialize(id, json);
+        String version = jsonMapper.readTree(json).path("_revision").asString("0");
+        return Optional.of(new VersionedSmartLink(definition, version));
+    }
+
+    @Override
+    public Optional<VersionedSmartLink> replaceIfVersionMatches(SmartLink replacement, String expectedVersion) {
+        String version = UUID.randomUUID().toString();
+        var document = jsonMapper.valueToTree(replacement);
+        ((tools.jackson.databind.node.ObjectNode) document).put("_revision", version);
+        Long updated = stringTemplate.execute(REPLACE, List.of(KEY_PREFIX + replacement.getId()),
+                expectedVersion, jsonMapper.writeValueAsString(document));
+        return Long.valueOf(1).equals(updated)
+                ? Optional.of(new VersionedSmartLink(replacement, version)) : Optional.empty();
     }
 
     private SmartLink deserialize(String id, String json) {

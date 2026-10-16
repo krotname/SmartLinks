@@ -3,10 +3,15 @@ name: Publish Docker Image
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
 
 permissions:
   contents: read
   packages: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -25,6 +30,18 @@ jobs:
 
       - name: Check ARC cache contract
         run: /opt/arc-cache/arc-cache check-workflow --file .github/workflows/publish.yml --job "$GITHUB_JOB"
+
+      - name: Verify release version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' build.gradle.kts)
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            test "$GITHUB_REF_NAME" = "v$version"
+          fi
+          printf 'value=%s\n' "$version" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 25
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
@@ -75,17 +92,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Refuse overwriting a release image
+        if: github.ref_type == 'tag'
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          set -euo pipefail
+          if result=$(docker manifest inspect "ghcr.io/krotname/smart-links:$RELEASE_VERSION" 2>&1); then
+            echo "Release image already exists: $RELEASE_VERSION" >&2
+            exit 1
+          elif [[ "$result" != *"manifest unknown"* && "$result" != *"no such manifest"* ]]; then
+            echo "Cannot verify that the release image is absent" >&2
+            exit 1
+          fi
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: ghcr.io/krotname/smart-links
           labels: |
-            org.opencontainers.image.version=0.1.0
+            org.opencontainers.image.version=${{ steps.version.outputs.value }}
           tags: |
             type=sha,format=long
-            type=raw,value=latest
-            type=raw,value=0.1.0
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ steps.version.outputs.value }},enable=${{ github.ref_type == 'tag' }}
 
       - name: Prepare pinned runtime through ARC OCI cache
         run: bash scripts/prepare-runtime-oci.sh

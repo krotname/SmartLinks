@@ -13,6 +13,10 @@
 
 SmartLinks is presented as an engineering sample first: routing is split into small roles, rule evaluation is composed from independent parts, and infrastructure stays behind narrow ports.
 
+## Owner management 0.2.0
+
+Create and edit regular and smart links with RU/EN, sessions and CSRF: [API and deployment](docs/owner-management.md). PUT uses ETag/If-Match and atomic Redis compare-and-set; the local L1 cache has been removed so every replica reads current destinations.
+
 ## Architecture
 
 - `RedirectController` accepts HTTP traffic and delegates the use case.
@@ -97,6 +101,8 @@ docker compose up --build
 OpenAPI UI is available at `/swagger-ui/index.html` after the application starts.
 
 ## Performance
+
+> The experiment below predates 0.2.0 and uses immutable links and an L1 cache. These results and comparisons do not characterize the current editable release with direct Redis reads. The v1/v2/v3 labels below identify experiment stages, not public product versions.
 
 Version 2 applies four targeted optimizations; version 3 adds an L1 cache:
 

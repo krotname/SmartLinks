@@ -42,6 +42,14 @@ jobs:
       - name: Prepare independent Gradle home
         run: /opt/arc-cache/arc-cache gradle-prepare --user-home "$HOME/.gradle"
 
+      - name: Set up Node for management contract tests
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Test management translations and definition round trips
+        run: node --test src/test/js/*.test.mjs
+
       - name: Build with Gradle Wrapper
         run: ./gradlew build jacocoTestReport --no-daemon --max-workers=2
 
@@ -57,7 +65,7 @@ jobs:
         run: /opt/arc-cache/arc-cache buildx-prepare
 
       - name: Stage application JAR
-        run: cp build/libs/SmartLinks-0.1.0.jar app.jar
+        run: cp build/libs/SmartLinks-0.2.0.jar app.jar
       - name: Prepare pinned runtime through ARC OCI cache
         run: bash scripts/prepare-runtime-oci.sh
       - name: Build runtime container

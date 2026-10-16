@@ -1,24 +1,25 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Управление ссылками · SmartLinks</title><link rel="stylesheet" href="style.css"><script src="app.js" defer></script></head>
-<body><main><header><h1>Управление ссылками</h1><button id="logout" type="button">Выйти</button></header>
-<p>Короткие ссылки на n-0.ru · SmartLinks 0.1.0</p>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Управление ссылками · SmartLinks</title><link rel="stylesheet" href="style.css"><script type="module" src="app.js"></script></head>
+<body><main><header><h1 data-i18n="title">Управление ссылками</h1><div><label><span data-i18n="language">Язык / Language</span><select data-locale><option value="ru">Русский</option><option value="en">English</option></select></label><button id="logout" type="button" data-i18n="logout">Выйти</button></div></header>
+<p data-i18n="subtitle">Короткие ссылки на n-0.ru · SmartLinks 0.2.0</p>
+<form id="lookup"><label><span data-i18n="lookup">Код существующей ссылки</span><input name="lookupCode" required maxlength="128" pattern="[A-Za-z0-9._-]+" autocomplete="off"></label><button id="load" type="submit" data-i18n="load">Открыть для редактирования</button><button id="new" type="button" data-i18n="newLink">Новая ссылка</button></form>
+<p id="edit-hint" class="hint" data-i18n="editHint" hidden></p>
 <form id="create">
-<label>Адрес назначения по умолчанию<input name="destination" type="url" placeholder="https://example.com/" required maxlength="4096"></label>
-<label>Короткий код<input name="code" required maxlength="128" pattern="[A-Za-z0-9._-]+" autocomplete="off" placeholder="my-link"></label>
-<button type="button" id="generate">Сгенерировать код</button>
-<p class="hint">Латинские буквы, цифры, точка, дефис и подчёркивание. Занятые коды нельзя перезаписать.</p>
-<details><summary>Умная ссылка: условия перехода</summary><p>Правила проверяются сверху вниз. Используется первое совпадение всех условий правила. Если совпадений нет — адрес по умолчанию. Все даты и время — МСК (UTC+03:00), включая обе границы.</p><div id="rules"></div><button type="button" id="add-rule">Добавить правило</button></details>
-<button id="save" type="submit">Создать ссылку</button></form>
+<label><span data-i18n="destination">Адрес назначения по умолчанию</span><input name="destination" type="url" placeholder="https://example.com/" required maxlength="2048"></label>
+<label><span data-i18n="code">Короткий код</span><input name="code" required maxlength="128" pattern="[A-Za-z0-9._-]+" autocomplete="off" placeholder="my-link"></label>
+<button type="button" id="generate" data-i18n="generate">Сгенерировать код</button>
+<p class="hint" data-i18n="codeHint"></p>
+<details id="advanced"><summary data-i18n="advanced">Умная ссылка: условия перехода</summary><p data-i18n="ruleHint"></p><div id="rules"></div><button type="button" id="add-rule" data-i18n="addRule">Добавить правило</button></details>
+<button id="save" type="submit" data-i18n="saveCreate">Создать ссылку</button></form>
 <p id="message" role="status" aria-live="polite"></p>
-<section id="result" hidden><h2>Ссылка сохранена</h2><label>Короткая ссылка<input id="short-url" readonly></label><button id="copy" type="button">Скопировать</button></section>
-<p><a href="https://n-0.ru/">На сайт</a></p>
+<section id="result" hidden><h2 data-i18n="saved">Ссылка сохранена</h2><label><span data-i18n="shortUrl">Короткая ссылка</span><input id="short-url" readonly></label><button id="copy" type="button" data-i18n="copy">Скопировать</button></section>
+<p><a href="https://n-0.ru/" data-i18n="site">На сайт</a></p>
 </main>
-<template id="rule-template"><fieldset class="rule"><legend>Правило</legend>
-<label>Адрес для этого правила<input data-url type="url" required maxlength="4096" placeholder="https://example.com/mobile"></label>
-<label>Устройство<select data-device><option value="">Любое</option><option value="mobile">Телефон или планшет</option><option value="desktop">Компьютер</option><option value="unknown">Не определено</option></select></label>
-<label>Язык<input data-language placeholder="ru, en-US" maxlength="256"></label>
-<p class="hint">Один или несколько языковых тегов через запятую. Пустое поле — любой язык.</p>
-<label>Начало, МСК<input data-start type="datetime-local" step="1"></label>
-<label>Конец, МСК<input data-end type="datetime-local" step="1"></label>
-<div class="actions"><button type="button" data-up>Выше</button><button type="button" data-down>Ниже</button><button type="button" data-remove>Удалить правило</button></div>
+<template id="rule-template"><fieldset class="rule"><legend data-i18n="rule">Правило</legend>
+<label><span data-i18n="ruleUrl">Адрес для этого правила</span><input data-url type="url" required maxlength="2048" placeholder="https://example.com/mobile"></label>
+<label><span data-i18n="devices">Устройства</span><input data-devices placeholder="mobile, desktop" maxlength="128"></label><p class="hint" data-i18n="devicesHint"></p>
+<label><span data-i18n="ruleLanguage">Языки</span><input data-language placeholder="ru, en-US" maxlength="256"></label><p class="hint" data-i18n="languageHint"></p>
+<label><span data-i18n="start">Начало, МСК</span><input data-start type="datetime-local" step="any"></label>
+<label><span data-i18n="end">Конец, МСК</span><input data-end type="datetime-local" step="any"></label>
+<div class="actions"><button type="button" data-up data-i18n="up">Выше</button><button type="button" data-down data-i18n="down">Ниже</button><button type="button" data-remove data-i18n="remove">Удалить правило</button></div>
 </fieldset></template></body></html>

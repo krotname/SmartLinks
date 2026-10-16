@@ -1,13 +1,32 @@
+# Backend ingress behind the existing website proxy. The website owns /<code>
+# and preserves existing pages/API before rewriting free paths to /s/<code>.
+# See docs/owner-management.md; do not point n-0.ru directly at this ingress.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: smart-links-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [smartlinks.n-0.ru, links.n-0.ru]
+      secretName: smart-links-tls
   rules:
-    - host: smart-links.local
+    - host: smartlinks.n-0.ru
       http:
         paths:
-          - path: /
+          - path: /s/
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-links-service
+                port:
+                  number: 80
+    - host: links.n-0.ru
+      http:
+        paths:
+          - path: /manage
             pathType: Prefix
             backend:
               service:
