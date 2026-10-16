@@ -66,6 +66,35 @@ class ManagementControllerTest {
                 .with(user("owner").roles("OWNER"))).andExpect(status().isNotFound());
     }
 
+    @Test void editingRequiresExplicitVersion() throws Exception {
+        mvc.perform(put("https://links.n-0.ru/manage/api/smartlinks/" + SMART_LINK_ID).secure(true)
+                .with(user("owner").roles("OWNER")).with(csrf().asHeader())
+                .contentType("application/json").content(fallbackSmartLinkJson()))
+                .andExpect(status().is(428));
+        verifyNoInteractions(service);
+    }
+
+    @Test void editingRejectsWildcardVersion() throws Exception {
+        mvc.perform(put("https://links.n-0.ru/manage/api/smartlinks/" + SMART_LINK_ID).secure(true)
+                .with(user("owner").roles("OWNER")).with(csrf().asHeader())
+                .header("If-Match", "*").contentType("application/json").content(fallbackSmartLinkJson()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test void anonymousCannotEditEvenWithCsrf() throws Exception {
+        mvc.perform(put("https://links.n-0.ru/manage/api/smartlinks/" + SMART_LINK_ID).secure(true)
+                .with(csrf()).header("If-Match", "\"0\"")
+                .contentType("application/json").content(fallbackSmartLinkJson()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test void editingRequiresCsrf() throws Exception {
+        mvc.perform(put("https://links.n-0.ru/manage/api/smartlinks/" + SMART_LINK_ID).secure(true)
+                .with(user("owner").roles("OWNER")).header("If-Match", "\"0\"")
+                .contentType("application/json").content(fallbackSmartLinkJson()))
+                .andExpect(status().isForbidden());
+    }
+
     @Test void formLoginRequiresCsrfAndChecksPassword() throws Exception {
         mvc.perform(post("https://links.n-0.ru/manage/login").secure(true)
                 .param("username", "owner").param("password", "test-password"))
