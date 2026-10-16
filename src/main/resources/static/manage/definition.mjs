@@ -1,4 +1,5 @@
-const names = ['DeviceType', 'Language', 'DateRange'];
+const argumentKeys = {DeviceType: ['devices'], Language: ['language'], DateRange: ['startWith', 'endWith']};
+const names = Object.keys(argumentKeys);
 
 // This module maps form fields to the existing wire format; the server owns validation.
 export function ruleToFields(rule) {
@@ -15,7 +16,9 @@ export function fieldsToRule(fields, original = {predicates: [], args: {}}) {
   const predicates = [...original.predicates.filter(name => active[name]),
     ...names.filter(name => active[name] && !original.predicates.includes(name))];
   const args = {...original.args};
-  for (const key of ['devices', 'language', 'startWith', 'endWith']) delete args[key];
+  for (const name of original.predicates) {
+    for (const key of argumentKeys[name] || []) delete args[key];
+  }
   const list = value => value.split(',').map(part => part.trim());
   if (active.DeviceType) args.devices = list(fields.devices);
   if (active.Language) args.language = list(fields.language);

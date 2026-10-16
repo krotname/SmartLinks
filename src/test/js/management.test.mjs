@@ -27,6 +27,17 @@ test('changing a field preserves unrelated rules and arguments', () => {
   assert.equal(fieldsToRule(fields, original).redirectTo, 'https://example.com/new');
   assert.equal(fieldsToRule(fields, original).args.metadata, 7);
 });
+test('inactive arguments with supported names survive an unchanged edit', () => {
+  const original = {predicates: ['Language'], args: {language: ['ru'], devices: ['unused'],
+    startWith: 'unused-start', endWith: 'unused-end'}, redirectTo: 'https://example.com/'};
+  assert.deepEqual(fieldsToRule(ruleToFields(original), original), original);
+});
+test('removing an active predicate removes only its own arguments', () => {
+  const original = {predicates: ['DeviceType'], args: {devices: ['mobile'], language: ['unused']},
+    redirectTo: 'https://example.com/'};
+  const fields = {...ruleToFields(original), devices: ''};
+  assert.deepEqual(fieldsToRule(fields, original), {predicates: [], args: {language: ['unused']}, redirectTo: original.redirectTo});
+});
 test('unsupported future predicates cannot be silently dropped by the editor', () => {
   assert.throws(() => ruleToFields({predicates: ['Future'], args: {}, redirectTo: 'https://example.com/'}));
   assert.throws(() => splitDefinition({id: 'a', rules: [{predicates: ['Language'], args: {language:['ru']}, redirectTo:'https://example.com/'}]}));
