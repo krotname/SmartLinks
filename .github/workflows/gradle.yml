@@ -13,6 +13,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DOCKER_BUILD_RECORD_UPLOAD: "false"
 jobs:
   build:
     name: Tests / Gradle
@@ -90,7 +92,7 @@ jobs:
           path: build/JacocoReportDir/jacoco.csv
           if-no-files-found: error
 
-          retention-days: 7
+          retention-days: 1
   badge:
     name: Update coverage badge
     needs: build
