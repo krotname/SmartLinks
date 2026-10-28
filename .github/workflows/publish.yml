@@ -13,6 +13,8 @@ concurrency:
   group: publish-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  DOCKER_BUILD_RECORD_UPLOAD: "false"
 jobs:
   publish:
     name: Build & Push to GHCR
