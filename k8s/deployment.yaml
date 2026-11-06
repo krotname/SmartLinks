@@ -17,7 +17,7 @@ spec:
       containers:
         - name: smart-links-container
           # Replace with the verified release digest before applying to production.
-          image: ghcr.io/krotname/smart-links:0.2.0
+          image: ghcr.io/krotname/smart-links:0.2.1
           ports:
             - containerPort: 8080
           env:

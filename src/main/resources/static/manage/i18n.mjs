@@ -1,7 +1,7 @@
 export const dictionaries = {
   ru: {
     title: 'Управление ссылками', loginTitle: 'Вход · SmartLinks', language: 'Язык / Language', logout: 'Выйти',
-    subtitle: 'Короткие ссылки на n-0.ru · SmartLinks 0.2.0', owner: 'Вход для владельца · SmartLinks 0.2.0',
+    subtitle: 'Короткие ссылки на n-0.ru · SmartLinks 0.2.1', owner: 'Вход для владельца · SmartLinks 0.2.1',
     username: 'Логин', password: 'Пароль', signIn: 'Войти', site: 'На сайт',
     loginError: 'Не удалось войти. Проверьте логин и пароль.', csrfError: 'Не удалось подготовить безопасный запрос. Обновите страницу.',
     destination: 'Адрес назначения по умолчанию', code: 'Короткий код', generate: 'Сгенерировать код',
@@ -26,7 +26,7 @@ export const dictionaries = {
   },
   en: {
     title: 'Link management', loginTitle: 'Sign in · SmartLinks', language: 'Язык / Language', logout: 'Sign out',
-    subtitle: 'Short links on n-0.ru · SmartLinks 0.2.0', owner: 'Owner sign-in · SmartLinks 0.2.0',
+    subtitle: 'Short links on n-0.ru · SmartLinks 0.2.1', owner: 'Owner sign-in · SmartLinks 0.2.1',
     username: 'Username', password: 'Password', signIn: 'Sign in', site: 'Back to website',
     loginError: 'Sign-in failed. Check your username and password.', csrfError: 'Could not prepare a secure request. Reload this page.',
     destination: 'Default destination URL', code: 'Short code', generate: 'Generate code',

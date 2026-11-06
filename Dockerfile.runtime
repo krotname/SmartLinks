@@ -1,5 +1,5 @@
 # Ubuntu JRE (glibc) required for Shenandoah GC; Alpine/musl does not include it.
-ARG RUNTIME_IMAGE=eclipse-temurin:25-jre@sha256:7ea65de6187ad8fbcc0ad155950c38664a7371148bb3ccf1ec1e1b286b44ad08
+ARG RUNTIME_IMAGE=eclipse-temurin:25-jre@sha256:ecdc0adb37bde1a281c4d245a3cd535004b1fc8322d560f5b09463b248c81df0
 FROM ${RUNTIME_IMAGE}
 
 WORKDIR /app
