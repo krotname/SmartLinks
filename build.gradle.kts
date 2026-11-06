@@ -1,14 +1,14 @@
 plugins {
     java
     jacoco
-    id("org.springframework.boot") version "4.1.0"
+    id("org.springframework.boot") version "4.1.2"
     id("io.gatling.gradle") version "3.13.5"
 }
 
 group = "name.krot"
-version = "0.2.0"
+version = "0.2.1"
 
-val springBootBom = "org.springframework.boot:spring-boot-dependencies:4.1.0"
+val springBootBom = "org.springframework.boot:spring-boot-dependencies:4.1.2"
 
 java {
     toolchain {

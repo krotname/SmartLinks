@@ -67,7 +67,7 @@ jobs:
         run: /opt/arc-cache/arc-cache buildx-prepare
 
       - name: Stage application JAR
-        run: cp build/libs/SmartLinks-0.2.0.jar app.jar
+        run: cp build/libs/SmartLinks-0.2.1.jar app.jar
       - name: Prepare pinned runtime through ARC OCI cache
         run: bash scripts/prepare-runtime-oci.sh
       - name: Build runtime container

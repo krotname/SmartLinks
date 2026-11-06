@@ -13,7 +13,7 @@
 
 SmartLinks is presented as an engineering sample first: routing is split into small roles, rule evaluation is composed from independent parts, and infrastructure stays behind narrow ports.
 
-## Owner management 0.2.0
+## Owner management 0.2.1
 
 Create and edit regular and smart links with RU/EN, sessions and CSRF: [API and deployment](docs/owner-management.md). PUT uses ETag/If-Match and atomic Redis compare-and-set; the local L1 cache has been removed so every replica reads current destinations.
 
